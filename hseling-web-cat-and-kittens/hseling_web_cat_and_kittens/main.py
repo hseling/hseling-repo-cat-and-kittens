@@ -2,7 +2,7 @@ import os
 from base64 import b64decode, b64encode
 from flask import Flask, Blueprint, render_template, request, redirect, jsonify
 from logging import getLogger
-import jsonrpclib
+import requests
 
 
 app = Flask(__name__)
@@ -19,14 +19,8 @@ print(app.config)
 
 def get_server_endpoint():
     HSELING_API_ENDPOINT = app.config.get('HSELING_API_ENDPOINT')
-    HSELING_RPC_ENDPOINT = app.config.get('HSELING_RPC_ENDPOINT')
 
-    return HSELING_RPC_ENDPOINT
-
-
-def get_jsonrpc_server():
-    jsonrpc_endpoint = get_server_endpoint()
-    return jsonrpclib.Server(jsonrpc_endpoint)
+    return HSELING_API_ENDPOINT
 
 
 if not app.debug:
@@ -50,15 +44,8 @@ def healthz():
 
 @app.route('/web/')
 def index():
-    a = int(request.args.get('a', 1))
-    b = int(request.args.get('b', 2))
-
-    server = get_jsonrpc_server()
-
-    try:
-        result = server.add(a, b)
-    except ConnectionRefusedError:
-        result = None
+    api_endpoint = get_server_endpoint()
+    result = requests.get(api_endpoint).content
 
     return render_template('index.html.j2', result=result)
 

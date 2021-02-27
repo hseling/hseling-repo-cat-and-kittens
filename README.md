@@ -54,7 +54,7 @@ PYTHONPATH=hseling-lib-cat-and-kittens:hseling-api-cat-and-kittens python hselin
 Prior to running MySQL server using Docker Compose
 
 ```bash
-rm -fr hseling-data-new-app/mysql/.gitkeep
+rm -fr hseling-data-cat-and-kittens/mysql/.gitkeep
 ```
 
 Build and run composed docker environment:

@@ -62,12 +62,12 @@ def do_process_task(file_ids_list):
 @celery.task
 def process_task(file_ids_list=None):
     return do_process_task(file_ids_list)
-@app.route('/healthz')
+@app.route('/api/healthz')
 def healthz():
     app.logger.info('Health checked')
     return jsonify({"status": "ok", "message": "hseling-api-cat-and-kittens"})
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/api/upload', methods=['GET', 'POST'])
 def upload_endpoint():
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -81,13 +81,13 @@ def upload_endpoint():
             return jsonify(boilerplate.save_file(upload_file))
     return boilerplate.get_upload_form()
 
-@app.route('/files/<path:file_id>')
+@app.route('/api/files/<path:file_id>')
 def get_file_endpoint(file_id):
     if file_id in boilerplate.list_files(recursive=True):
         return boilerplate.get_file(file_id)
     return jsonify({'error': boilerplate.ERROR_NO_SUCH_FILE})
 
-@app.route('/files')
+@app.route('/api/files')
 def list_files_endpoint():
     return jsonify({'file_ids': boilerplate.list_files(recursive=True)})
 
@@ -96,8 +96,8 @@ def do_process(file_ids):
     task = process_task.delay(file_ids_list)
     return {"task_id": str(task)}
 
-@app.route('/process')
-@app.route("/process/<file_ids>")
+@app.route('/api/process')
+@app.route("/api/process/<file_ids>")
 def process_endpoint(file_ids=None):
     return jsonify(do_process(file_ids))
 
@@ -114,12 +114,12 @@ def do_query(file_id, query_type):
         }
     return {"error": boilerplate.ERROR_NO_SUCH_FILE}
 
-@app.route("/query/<path:file_id>")
+@app.route("/api/query/<path:file_id>")
 def query_endpoint(file_id):
     query_type = request.args.get('type')
     return jsonify(do_query(file_id, query_type))
 
-@app.route("/status/<task_id>")
+@app.route("/api/status/<task_id>")
 def status_endpoint(task_id):
     return jsonify(boilerplate.get_task_status(task_id))
 
@@ -132,7 +132,7 @@ def do_test_mysql():
         schema.setdefault(table_name.decode('utf-8'), []).append(column_name)
     return {"schema": schema}
 
-@app.route("/test_mysql")
+@app.route("/api/test_mysql")
 def test_mysql_endpoint():
     return jsonify(do_test_mysql())
 
@@ -157,7 +157,7 @@ def get_endpoints(ctx):
     return {ep["name"]: ep for ep in all_endpoints if ep}
 
 
-@app.route("/")
+@app.route("/api/")
 def main_endpoint():
     ctx = {"restricted_mode": boilerplate.RESTRICTED_MODE}
     return jsonify({"endpoints": get_endpoints(ctx)})
