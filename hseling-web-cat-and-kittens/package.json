@@ -1,0 +1,15 @@
+{
+  "name": "hseling-web-cat-and-kittens",
+  "version": "1.0.0",
+  "description": "HSE Linguistics WEB: Cat and Kittens.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andrea Grillandi <andrea.grillandi@live.it>",
+  "license": "MIT",
+  "dependencies": {
+    "bootstrap": "^4.6.0",
+    "jquery": "^3.5.1"
+  }
+}

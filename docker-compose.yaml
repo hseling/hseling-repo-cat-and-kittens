@@ -1,0 +1,86 @@
+version: '3.4'
+
+x-common-variables: &common-variables
+  CELERY_BROKER_URL: redis://redis:6379
+  CELERY_RESULT_BACKEND: redis://redis:6379
+  MYSQL_HOST: mysql
+  MYSQL_ROOT_PASSWORD: mysql123
+  MYSQL_USER: mysql
+  MYSQL_PASSWORD: mysql123
+  MYSQL_DATABASE: hse-api-database
+  HSELING_RPC_ENDPOINT: http://hse-api-web:80/rpc/
+  HSELING_API_ENDPOINT: http://hse-api-web:80/api/
+  RESTRICTED_MODE: 0
+
+services:
+  hse-api-web:
+    build:
+      context: .
+      dockerfile: hseling-api-cat-and-kittens/Dockerfile
+    ports:
+      - "5000:80"
+    volumes:
+      - type: bind
+        source: ./hseling-api-cat-and-kittens/hseling_api_cat_and_kittens
+        target: /app/hseling_api_cat_and_kittens
+      - type: bind
+        source: ./hseling-data-cat-and-kittens/api
+        target: /data
+    depends_on:
+      - mysql
+      - redis
+      - hse-api-celery
+    environment: *common-variables
+
+  hse-api-celery:
+    build:
+      context: .
+      dockerfile: hseling-api-cat-and-kittens/Dockerfile
+    command: celery -A main.celery worker
+    volumes:
+      - type: bind
+        source: ./hseling-api-cat-and-kittens/hseling_api_cat_and_kittens
+        target: /app/hseling_api_cat_and_kittens
+      - type: bind
+        source: ./hseling-data-cat-and-kittens/api
+        target: /data
+    depends_on:
+      - mysql
+      - redis
+    environment: *common-variables
+
+
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment: *common-variables
+    volumes:
+      - type: bind
+        source: ./hseling-data-cat-and-kittens/mysql
+        target: /var/lib/mysql
+
+
+  redis:
+    image: redis:latest
+
+  hse-web-web:
+    build:
+      context: .
+      dockerfile: hseling-web-cat-and-kittens/Dockerfile
+    ports:
+      - "8000:80"
+    depends_on:
+      - hse-api-web
+      - hse-api-celery
+    environment: *common-variables
+    volumes:
+      - type: bind
+        source: ./hseling-web-cat-and-kittens/hseling_web_cat_and_kittens
+        target: /app/hseling_web_cat_and_kittens
+      - type: bind
+        source: ./hseling-web-cat-and-kittens/hseling_web_cat_and_kittens/static
+        target: /app/static
+      - type: bind
+        source: ./hseling-data-cat-and-kittens/web
+        target: /data

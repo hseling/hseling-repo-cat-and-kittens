@@ -1,0 +1,2 @@
+recursive-include hseling_api_cat_and_kittens/templates *
+recursive-include hseling_api_cat_and_kittens/static *
