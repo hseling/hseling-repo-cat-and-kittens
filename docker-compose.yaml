@@ -7,7 +7,7 @@ x-common-variables: &common-variables
   MYSQL_ROOT_PASSWORD: mysql123
   MYSQL_USER: mysql
   MYSQL_PASSWORD: mysql123
-  MYSQL_DATABASE: hse-api-database
+  MYSQL_DATABASE: hseling-cat-and-kittens
   HSELING_RPC_ENDPOINT: http://hse-api-web:80/rpc/
   HSELING_API_ENDPOINT: http://hse-api-web:80/api/
   RESTRICTED_MODE: 0
@@ -52,6 +52,8 @@ services:
 
   mysql:
     image: mysql
+    ports:
+      - "13306:3306"
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment: *common-variables
