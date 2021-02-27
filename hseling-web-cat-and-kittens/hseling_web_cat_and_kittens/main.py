@@ -36,7 +36,7 @@ if not app.debug:
 log = getLogger(__name__)
 
 
-@app.route('/healthz')
+@app.route('/web/healthz')
 def healthz():
     app.logger.info('Health checked')
     return jsonify({"status": "ok", "message": "hseling-web-cat-and-kittens"})
