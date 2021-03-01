@@ -1,0 +1,74 @@
+.search-corpus {
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+}
+
+.cat {
+    position:absolute;
+    right: 10px;
+}
+
+.subject-field {
+    display: inline-block;
+    width: auto;
+}
+
+.search-field {
+    position: relative;
+    background: #CEECF5;
+    padding: 10px 10px 0px 10px;
+}
+
+.search-field:before {
+    content: " ";
+    background-color: #ceecf5;
+    position: absolute;
+    height: 34px;
+    width: 100%;
+    left: 0px;
+    top: 100%;
+    z-index: -1;
+}
+
+.search-lex-gram {
+    display: flex;
+    background: #CEECF5;
+    flex-direction: column;
+}
+
+.search-exact {
+    background: #CEECF5;
+}
+
+.exact-search-field {
+    margin: 10px;
+}
+
+.exact-search-button {
+    margin-left: calc(50% - 38px);
+    margin-bottom: 10px !important;
+}
+
+.lex-gram-button {
+    width: 76.1px;
+    margin-left: calc(50% - 38px);
+    margin-bottom: 10px;
+}
+
+.lemma {
+    margin: 10px;
+}
+
+.distance {
+    margin: 10px;
+}
+
+.relation {
+    margin: 10px;
+}
+
+.domain {
+    margin: 10px;
+}
+

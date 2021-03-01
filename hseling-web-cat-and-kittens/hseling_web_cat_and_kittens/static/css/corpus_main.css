@@ -1,0 +1,16 @@
+.info {
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+}
+
+.cat{
+    display: flex;
+    justify-content: space-between;
+
+}
+
+.list-and-size{
+    display: flex;
+    flex-direction: column;
+}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Upload page{% endblock %}
+
+{% block links %}
+<link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
+<link href="../static/css/bootstrap.css" rel="stylesheet">
+<link href="../static/css/sticky-footer-navbar.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/user.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <form action="/edit-content/{{ edits.id }}" method="post">
+            <input type="hidden" name="user" value="{{ current_user.username }}">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-success alert-dismissable" role="alert">
+                <button type="button" class="close" data-dismiss='alert' aria-label="close">
+                    <span aria-hidden="true">
+                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-backspace" fill="currentColor"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M6.603 2h7.08a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-7.08a1 1 0 0 1-.76-.35L1 8l4.844-5.65A1 1 0 0 1 6.603 2zm7.08-1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7.08a2 2 0 0 1-1.519-.698L.241 8.65a1 1 0 0 1 0-1.302L5.084 1.7A2 2 0 0 1 6.603 1h7.08zM5.829 5.146a.5.5 0 0 0 0 .708L7.976 8l-2.147 2.146a.5.5 0 0 0 .707.708l2.147-2.147 2.146 2.147a.5.5 0 0 0 .707-.708L9.39 8l2.146-2.146a.5.5 0 0 0-.707-.708L8.683 7.293 6.536 5.146a.5.5 0 0 0-.707 0z" />
+                        </svg>
+                    </span>
+                </button>
+                <p class="text-center mb-0" style="color: green;">{{message}}</p>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div class="form-group">
+                <label for="exampleFormControlTextarea1">Content textarea</label>
+                <textarea class="form-control" name="content" id="exampleFormControlTextarea1"
+                    rows="3">{{ edits.content }}</textarea>
+            </div>
+            <div class="form-group mt-5">
+                <label for="exampleFormControlTextarea1">Your Comment</label>
+                <input type="text" value="{{ edits.comment }}" class="form-control" name="comment">
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary text-uppercase">Submit</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
