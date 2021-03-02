@@ -3,12 +3,12 @@
 
 {% block links %}
 <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
-<link href="../static/css/sticky-footer-navbar.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="../static/css/search.css">
+<link href="{{ url_for('static', filename='css/sticky-footer-navbar.css') }}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/search.css') }}">
 <script type="text/javascript" src="{{ url_for('static', filename='js/dropdown_checkboxes.js') }}"></script>
 <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
-<link href="../static/css/bootstrap.css" rel="stylesheet">
-<link href="../static/css/cover.css" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/cover.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}

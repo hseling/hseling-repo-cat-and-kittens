@@ -33,7 +33,9 @@ from datetime import datetime
 
 
 app = Flask(__name__)
-app.config['DEBUG'] = False
+app.config['DEBUG'] = os.environ.get('DEBUG', False)
+if app.config['DEBUG']:
+    print("For debug purposes it's better to use logging module")
 app.config['LOG_DIR'] = '/tmp/'
 if os.environ.get('HSELING_WEB_CAT_AND_KITTENS_SETTINGS'):
     app.config.from_envvar('HSELING_WEB_CAT_AND_KITTENS_SETTINGS')
@@ -41,24 +43,22 @@ if os.environ.get('HSELING_WEB_CAT_AND_KITTENS_SETTINGS'):
 app.config['HSELING_API_ENDPOINT'] = os.environ.get('HSELING_API_ENDPOINT')
 app.config['HSELING_RPC_ENDPOINT'] = os.environ.get('HSELING_RPC_ENDPOINT')
 
-print(app.config)
-
 mysql = MySQL(app)
 squlitedb = SQLAlchemy(app)
 Login_Manager = LoginManager()
 Login_Manager.init_app(app)
 Login_Manager.login_view = 'login'
 
-app.config['SECRET_KEY'] = 'dmvndshjvbsdvjhvjvgfuy'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key_value')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'data/database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# app.config['MYSQL_HOST'] = 'hostname'
-# app.config['MYSQL_USER'] = 'user'
-# app.config['MYSQL_PASSWORD'] = 'password'
-# app.config['MYSQL_DB'] = 'db_name'
+app.config['MYSQL_HOST'] = os.environ['MYSQL_HOST']
+app.config['MYSQL_USER'] = os.environ['MYSQL_USER']
+app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_PASSWORD']
+app.config['MYSQL_DATABASE'] = os.environ['MYSQL_DATABASE']
 
-# app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 def get_server_endpoint():
     HSELING_API_ENDPOINT = app.config.get('HSELING_API_ENDPOINT')
@@ -91,28 +91,28 @@ class LoginForm(FlaskForm):
 
 class RegisterForm(FlaskForm):
 
-    fullname = StringField('Полное имя', validators=[InputRequired('Полное имя требуется.')])
-    username = StringField('Имя пользователя', validators=[InputRequired('Имя пользователя требуется для.')])
-    password = PasswordField('пароль', validators=[InputRequired('пароль требуется для.')])
-    password1 = PasswordField('Подтвердить пароль', validators=[InputRequired('Подтвердить пароль требуется для.')])
-    email = StringField('Эл. адрес', validators=[InputRequired(), Email(message='Эл. адрес требуется для.')])
+    fullname = StringField('ФИО', validators=[InputRequired('Требуется ФИО')])
+    username = StringField('Имя пользователя', validators=[InputRequired('Требуется имя пользователя')])
+    password = PasswordField('пароль', validators=[InputRequired('Требуется пароль')])
+    password1 = PasswordField('Подтвердить пароль', validators=[InputRequired('Подтвердить пароль')])
+    email = StringField('Эл. адрес', validators=[InputRequired(), Email(message='Требуется эл. адрес')])
 
     def validate_username(self, username):
         user = UserInfo.query.filter_by(username=username.data).first()
         if user:
-            raise ValidationError('A user is already exists with this username!!!')
+            raise ValidationError('A user with this username already exists!')
 
     def validate_email(self, email):
         email = UserInfo.query.filter_by(email=email.data).first()
         if email:
-            raise ValidationError('A user is already exists with this Email!!!')
+            raise ValidationError('A user with this username already exists!')
 
 
 class profileForm(FlaskForm):
 
-    fullname = StringField('Полное имя', validators=[InputRequired('Полное имя требуется.')])
-    username = StringField('Имя пользователя', validators=[InputRequired('Имя пользователя требуется для.')])
-    email = StringField('Эл. адрес', validators=[InputRequired(), Email(message='Эл. адрес требуется для.')])
+    fullname = StringField('ФИО', validators=[InputRequired('Требуется ФИО')])
+    username = StringField('Имя пользователя', validators=[InputRequired('Требуется имя пользователя')])
+    email = StringField('Эл. адрес', validators=[InputRequired(), Email(message='Требуется эл. адрес')])
     picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Update Profile')
 
@@ -120,13 +120,13 @@ class profileForm(FlaskForm):
         if username.data != current_user.username:
             user = UserInfo.query.filter_by(username=username.data).first()
             if user:
-                raise ValidationError('A user is already exists with this username!!!')
+                raise ValidationError('A user with this username already exists!')
 
     def validate_email(self, email):
         if email.data != current_user.email:
             email = UserInfo.query.filter_by(email=email.data).first()
             if email:
-                raise ValidationError('A user is already exists with this Email!!!')
+                raise ValidationError('A user with this username already exists!')
 
 
 class UserInfo(UserMixin, squlitedb.Model):
@@ -202,7 +202,6 @@ def login():
         if user and check_password_hash(user.password, loginForm.password.data):
             login_user(user)
             next_url = request.args.get("next")
-            print(next_url)
             return redirect(next_url) if next_url else redirect(url_for('profile'))
 
         else:
@@ -313,16 +312,14 @@ def search():
         details = request.form
         search_token = details['search']
         csrftoken = details['csrfmiddlewaretoken']
-        print('1', session['csrftoken'])
-        print('2', csrftoken)
         if csrftoken == session.get('csrftoken', None):
             frequency = 'freq_all'
-
             cur = mysql.connection.cursor()
-            cur.execute(f'''SELECT unigrams.{frequency} as frequency, lemmas.lemma as lemma
+            stmt = '''SELECT unigrams.%(freq)s as frequency, lemmas.lemma as lemma
             FROM unigrams 
             JOIN lemmas ON unigrams.lemma = lemmas.id_lemmas
-            WHERE unigrams.unigram = "{search_token}";''')
+            WHERE unigrams.unigram = "%(src_token)s";'''
+            cur.execute(stmt, {'freq' : frequency, 'src_token' : search_token})
             row_headers = [x[0] for x in cur.description]
             rv = cur.fetchall()
             json_data = []
@@ -341,28 +338,30 @@ def base():
 
 @app.route('/web/collocations', methods=['GET', 'POST'])
 def collocations():
+
+    domain_tokens_dict = {'Linguistics' : 3, 'Sociology' : 6, 'History' : 5, 'Law' : 2, 'Psychology' : 4, 'Economics' : 1}
+
     if request.method == "GET":
         return render_template('collocations.html', title='Collocations')
 
     else:
         details = request.form
-        print(details)
         search_token = details['search_collocations']
         search_metric = details['search-metric'].lower()
         search_domain = details['search-domain']
 
         if search_domain == 'Лингвистика':
-            domain_token = '3'
+            domain_token = domain_tokens_dict.get('Linguistics')
         elif search_domain == 'Социология':
-            domain_token = '6'
+            domain_token = domain_tokens_dict.get('Sociology')
         elif search_domain == 'История':
-            domain_token = '5'
+            domain_token = domain_tokens_dict.get('History')
         elif search_domain == 'Юриспруденция':
-            domain_token = '2'
+            domain_token = domain_tokens_dict.get('Law')
         elif search_domain == 'Психология и педагогика':
-            domain_token = '4'
+            domain_token = domain_tokens_dict.get('Psychology')
         elif search_domain == 'Экономика':
-            domain_token = '1'
+            domain_token = domain_tokens_dict.get('Economics')
         else:
             domain_token = None
         
@@ -380,7 +379,7 @@ def collocations():
         
     
         cur = mysql.connection.cursor()
-        cur.execute(f'''SELECT tab2.unigram_token as entered_search, 
+        stmt = '''SELECT tab2.unigram_token as entered_search, 
         tab1.unigram as collocate,
         frequency,
         pmi,
@@ -391,16 +390,18 @@ def collocations():
         (SELECT 
         unigrams.unigram as unigram_token, 
         2grams.wordform_2 as collocate_id, 
-        2grams.{frequency} as frequency,
-        2grams.{pmi} as pmi,
-        2grams.{tscore} as t_score,
-        2grams.{logdice} as logdice
+        2grams.%(frequency)s as frequency,
+        2grams.%(pmi)s as pmi,
+        2grams.%(tscore)s as t_score,
+        2grams.%(logdice)s as logdice
         FROM unigrams
         JOIN 2grams ON unigrams.id_unigram = 2grams.wordform_1 
-        WHERE unigrams.unigram = "{search_token}") as tab2
+        WHERE unigrams.unigram = "%(search_token)s") as tab2
         ON tab2.collocate_id = tab1.id_unigram
-        ORDER BY {search_metric} DESC
-        LIMIT 20;''')
+        ORDER BY %(search_metric)s DESC
+        LIMIT 20;'''
+        cur.execute(stmt, { 'frequency' : frequency, 'pmi' : pmi, 'tscore' : tscore,
+        'logdice' : logdice, 'search_token' : search_token, 'search_metric' : search_metric})
         row_headers = [x[0] for x in cur.description]
         rv = cur.fetchall()
         json_data = []
@@ -463,8 +464,6 @@ def send_last_version(file_id):
 @app.route('/web/save_edited_text', methods=['POST'])
 def save_edited_text():
     data = request.get_json()
-    print('/save_edited_text request_data.file_id:')
-    print(data['file_id'])
     text = data['text']
     file_id = data['file_id']
     save_next_version(text, file_id)
@@ -473,17 +472,13 @@ def save_edited_text():
 @app.route('/web/aspects_checking', methods=['POST']) 
 def aspects_checking():
     data = request.get_json()
-    print('/aspects_checking request_data:')
-    print(data)
     file_id = data['file_id'] 
     text = get_last_version(file_id)  
     chosen_aspects = data['chosen_aspects']
-    print(chosen_aspects)
     problems = {}
     for chosen_aspect in chosen_aspects:
         checking_function = constants.ASPECT2FUNCTION[chosen_aspect]
         problems[chosen_aspect] = checking_function(text)
-    print('problems:', problems)
     return jsonify({'problems':problems, 'text': text})
 
 @app.route('/web/analysis')
