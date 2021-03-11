@@ -35,7 +35,7 @@
       <h4>Поиск точной формы</h4>
       <form class="form-inline my-2 my-lg-0 search-exact" action="search" method="post">
         <input type='hidden' name='csrfmiddlewaretoken'
-          value='APhqDVYfVhF9ajd0BvFA7Sy0jpOVy25s3A4BaL6GekKgvVBZMzBTWxweMfj5r4Ja' />
+          value={{ random_token }} />
         <input class="form-control mr-sm-2 exact-search-field" type="search" placeholder="Введите словоформу"
           aria-label="Search" name="search" style="width: 100%;">
         <button class="btn btn-success my-2 my-sm-0 exact-search-button" type="submit">Искать</button>
@@ -48,7 +48,7 @@
         <div class="search-lex-gram">
           <div class="lemma">
             <input type='hidden' name='csrfmiddlewaretoken'
-              value='APhqDVYfVhF9ajd0BvFA7Sy0jpOVy25s3A4BaL6GekKgvVBZMzBTWxweMfj5r4Ja' />
+              value={{ random_token }} />
             <input class="form-control mr-sm-2" placeholder="Введите лемму 1" name="lemma1">
 
             <textarea class="form-control" rows="1" name="morph1" id="morph1" readonly></textarea>
