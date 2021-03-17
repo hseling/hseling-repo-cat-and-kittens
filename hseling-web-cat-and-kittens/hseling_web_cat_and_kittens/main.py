@@ -6,6 +6,7 @@ import requests
 from flask_mysqldb import MySQL
 import json
 from flask import *
+# from hseling_api_cat_and_kittens.boilerplate import get_mysql_connection
 # from file_manager import *
 # import spelling
 # import constants
@@ -313,20 +314,11 @@ def search():
         search_token = details['search']
         csrftoken = details['csrfmiddlewaretoken']
         if csrftoken == session.get('csrftoken', None):
-            frequency = 'freq_all'
-            cur = mysql.connection.cursor()
-            stmt = '''SELECT unigrams.%(freq)s as frequency, lemmas.lemma as lemma
-            FROM unigrams 
-            JOIN lemmas ON unigrams.lemma = lemmas.id_lemmas
-            WHERE unigrams.unigram = "%(src_token)s";'''
-            cur.execute(stmt, {'freq' : frequency, 'src_token' : search_token})
-            row_headers = [x[0] for x in cur.description]
-            rv = cur.fetchall()
-            json_data = []
-            for result in rv:
-                json_data.append(dict(zip(row_headers, result)))
-
-            return render_template('db_response.html', response=json.dumps(json_data), token=search_token)
+            api_endpoint = get_server_endpoint() + "/bigram_search?token=" + search_token
+            result = requests.get(api_endpoint).content
+            return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=search_token)
+        else:
+            return "Ha-ha! Gotcha!
 
 @app.route('/web/search_morph')
 def search_morph():

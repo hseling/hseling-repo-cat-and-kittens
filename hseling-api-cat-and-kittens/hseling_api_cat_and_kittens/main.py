@@ -5,7 +5,7 @@ from logging import getLogger
 
 
 
-from hseling_api_cat_and_kittens import boilerplate
+from hseling_api_cat_and_kittens import boilerplate, db_queries
 
 from hseling_lib_cat_and_kittens.process import process_data
 from hseling_lib_cat_and_kittens.query import query_data
@@ -156,6 +156,10 @@ def get_endpoints(ctx):
 
     return {ep["name"]: ep for ep in all_endpoints if ep}
 
+@app.route("/api/bigram_search")
+def bigram_search_endpoint():
+    search_token = request.args.get("token")
+    return jsonify({"values": db_queries.bigram_search(search_token)})
 
 @app.route("/api/")
 def main_endpoint():
