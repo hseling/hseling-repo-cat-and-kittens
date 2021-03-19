@@ -33,7 +33,7 @@
       <div class="form-row">
         <div class="form-inline search-field">
           <input type="hidden" name="csrfmiddlewaretoken"
-            value="PVwilsONLGlzBqCdIDudSVtVUaUFEZzDiGjtSiWe4JqGW20cTHqwHAr9n0pPx1dl">
+            value={{ csrf_token }}>
           <input class="form-control mr-sm-2" type="search" placeholder="Введите слово" aria-label="Search"
             name="search_collocations" style="margin-left: 10px;margin-right: 0 !important;">
 
@@ -52,9 +52,9 @@
           <div class="domain">
             <select class="form-control" name="search-metric">
               <option>PMI</option>
-              <option>t_score</option>
+              <option>t-score</option>
               <option>logdice</option>
-              <option>corpus_frequency</option>
+              <option>Frequency</option>
             </select>
           </div>
 

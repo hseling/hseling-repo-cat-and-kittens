@@ -13,6 +13,8 @@ from flask import *
 # import secrets
 # from readability import countFKG, uniqueWords
 
+from hseling_web_cat_and_kittens import boilerplate
+
 from sqlalchemy.sql.schema import BLANK_SCHEMA
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -314,11 +316,11 @@ def search():
         search_token = details['search']
         csrftoken = details['csrfmiddlewaretoken']
         if csrftoken == session.get('csrftoken', None):
-            api_endpoint = get_server_endpoint() + "/bigram_search?token=" + search_token
+            api_endpoint = get_server_endpoint() + "/freq_search?token=" + search_token
             result = requests.get(api_endpoint).content
             return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=search_token)
         else:
-            return "Ha-ha! Gotcha!
+            return "Error 400"
 
 @app.route('/web/search_morph')
 def search_morph():
@@ -331,75 +333,32 @@ def base():
 @app.route('/web/collocations', methods=['GET', 'POST'])
 def collocations():
 
-    domain_tokens_dict = {'Linguistics' : 3, 'Sociology' : 6, 'History' : 5, 'Law' : 2, 'Psychology' : 4, 'Economics' : 1}
-
     if request.method == "GET":
-        return render_template('collocations.html', title='Collocations')
+        tk = secrets.token_urlsafe()
+        session['csrftoken'] = str(tk)
+        session_csrftoken = session['csrftoken']
+        return render_template('collocations.html', title='Collocations', csrf_token=session_csrftoken)
 
     else:
         details = request.form
         search_token = details['search_collocations']
-        search_metric = details['search-metric'].lower()
-        search_domain = details['search-domain']
-
-        if search_domain == 'Лингвистика':
-            domain_token = domain_tokens_dict.get('Linguistics')
-        elif search_domain == 'Социология':
-            domain_token = domain_tokens_dict.get('Sociology')
-        elif search_domain == 'История':
-            domain_token = domain_tokens_dict.get('History')
-        elif search_domain == 'Юриспруденция':
-            domain_token = domain_tokens_dict.get('Law')
-        elif search_domain == 'Психология и педагогика':
-            domain_token = domain_tokens_dict.get('Psychology')
-        elif search_domain == 'Экономика':
-            domain_token = domain_tokens_dict.get('Economics')
-        else:
-            domain_token = None
-        
-        if domain_token:
-            frequency = f'd{domain_token}_freq'
-            pmi = f'd{domain_token}_pmi'
-            tscore = f'd{domain_token}_tsc'
-            logdice = f'd{domain_token}_logdice'
-
-        else: 
-            frequency = 'raw_frequency'
-            pmi = 'pmi'
-            tscore = 'tscore'
-            logdice = 'logdice'
-        
-    
-        cur = mysql.connection.cursor()
-        stmt = '''SELECT tab2.unigram_token as entered_search, 
-        tab1.unigram as collocate,
-        frequency,
-        pmi,
-        t_score,
-        logdice
-        FROM unigrams as tab1
-        JOIN
-        (SELECT 
-        unigrams.unigram as unigram_token, 
-        2grams.wordform_2 as collocate_id, 
-        2grams.%(frequency)s as frequency,
-        2grams.%(pmi)s as pmi,
-        2grams.%(tscore)s as t_score,
-        2grams.%(logdice)s as logdice
-        FROM unigrams
-        JOIN 2grams ON unigrams.id_unigram = 2grams.wordform_1 
-        WHERE unigrams.unigram = "%(search_token)s") as tab2
-        ON tab2.collocate_id = tab1.id_unigram
-        ORDER BY %(search_metric)s DESC
-        LIMIT 20;'''
-        cur.execute(stmt, { 'frequency' : frequency, 'pmi' : pmi, 'tscore' : tscore,
-        'logdice' : logdice, 'search_token' : search_token, 'search_metric' : search_metric})
-        row_headers = [x[0] for x in cur.description]
-        rv = cur.fetchall()
-        json_data = []
-        for result in rv:
-            json_data.append(dict(zip(row_headers, result)))
-        return render_template('db_response.html', response=json.dumps(json_data), token=search_token)
+        csrftoken = details['csrfmiddlewaretoken']
+        if csrftoken == session.get('csrftoken', None):
+            search_token = details['search_collocations']
+            search_metric = details['search-metric']
+            search_metric = boilerplate.metric_converter(search_metric)
+            search_domain = details['search-domain']
+            search_domain = boilerplate.domain_to_index(search_domain)
+            api_endpoint = get_server_endpoint() + "/bigram_search?token=" + search_token + "&metric="
+            api_endpoint += search_metric + "&domain=" + str(search_domain)
+            result = requests.get(api_endpoint).content
+            result = json.loads(result)
+            result = result["values"]
+            if not result:
+                return 'Error 400'
+            else: 
+                return render_template('db_response.html', response=json.dumps(result), token=search_token)
+        else: "Error 400"
 
 @app.route('/web/render_upload_file', methods=['GET'])
 def render_upload_file():
