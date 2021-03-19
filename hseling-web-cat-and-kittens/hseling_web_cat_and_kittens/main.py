@@ -6,9 +6,9 @@ import requests
 from flask_mysqldb import MySQL
 import json
 from flask import *
-# from file_manager import *
-# import spelling
-# import constants
+from hseling_web_cat_and_kittens.file_manager import *
+import hseling_web_cat_and_kittens.spelling
+import hseling_web_cat_and_kittens.constants
 # import secrets
 # from readability import countFKG, uniqueWords
 
@@ -474,11 +474,14 @@ def aspects_checking():
     data = request.get_json()
     file_id = data['file_id'] 
     text = get_last_version(file_id)  
-    chosen_aspects = data['chosen_aspects']
-    problems = {}
-    for chosen_aspect in chosen_aspects:
-        checking_function = constants.ASPECT2FUNCTION[chosen_aspect]
-        problems[chosen_aspect] = checking_function(text)
+    aspects = data['chosen_aspects']
+    if not hasattr(aspects, '__iter__') or any([aspect not in constants.possible_aspects for aspect in aspects]):
+        aspects = constants.possible_aspects
+    checker_respond = request.post("/api/check_student_text", data={'text': text, 'aspects':aspects})
+    if checker_respond.status_code == 200:
+        problems = checker_respond.json
+    else:
+        problems = {aspect:[] for aspect in aspects}
     return jsonify({'problems':problems, 'text': text})
 
 @app.route('/web/analysis')
