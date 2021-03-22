@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Загрузите файл на проверку{% endblock %}
+
+{% block links %}
+
+<link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
+<link href="../static/css/bootstrap.css" rel="stylesheet">
+<link href="../static/css/sticky-footer-navbar.css" rel="stylesheet">
+<script type=text/javascript src="{{ url_for('static', filename='js/jquery-3.5.1.min.js') }}"></script>
+<script type=text/javascript src="{{ url_for('static', filename='js/jquery.form.min.js') }}"></script>
+<script type=text/javascript src="{{ url_for('static', filename='js/upload_file_and_check_spelling.js') }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+<main role="main" class="container">
+  <div class="row">
+    <h4>Загрузите новый файл</h4>
+  </div>
+
+  <form id="docx-form" method="post">
+    <div class="form-group">
+      <label for="exampleFormControlFile1">Загрузите txt-файл в кодировке utf-8.<br>Длина абзацев в файле не должна превышать 100000 символов</label>
+      <input accept='.txt, .docx' type="file" class="form-control-file" id="docx-file" name="file">
+    </div>
+  </form>
+
+  <div class='spelling_corrections'>
+    <div class='spelling_instruction'>
+      Когда вы загрузите свою работу, мы предложим вам выбрать варианты исправления орфографических ошибок (если они
+      будут), а затем перенаправим вас на страницу редактирования текста.
+    </div>
+
+    <div class="spelling_options"></div>
+
+    <input type="button" class="btn btn-outline-primary" name="submit_spelling" value="Внести исправления и продолжить" />
+  </div>
+
+</main>
+<footer class="footer">
+  <div class="container custom-footer">
+    <span class="text-muted">
+      <img class="cat-image" src="../static/img/cat8.jpg" />
+    </span>
+  </div>
+</footer>
+{% endblock %}

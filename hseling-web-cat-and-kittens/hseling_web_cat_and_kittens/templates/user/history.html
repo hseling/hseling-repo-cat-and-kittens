@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}History Page{% endblock %}
+
+{% block links %}
+<link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
+<link href="../static/css/bootstrap.css" rel="stylesheet">
+<link href="../static/css/sticky-footer-navbar.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/user.css">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <table class="table mt-5">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Date</th>
+        <th scope="col">Author</th>
+        <th scope="col">View/Edit</th>
+        <th scope="col">Comment</th>
+      </tr>
+    </thead>
+    {% for history in histories %}
+    {% if history.author == current_user.username %}
+    <tbody>
+      <tr>
+        <th scope="row">{{ history.id }}</th>
+        <td>{{ history.date_posted }}</td>
+        <td>{{ history.author }}</td>
+        <td><a href="/view-content/{{ history.id }}" target="_blank">View</a> / <a href="/edit-content/{{ history.id }}">Edit</a></td>
+        <td>{{ history.comment }}</td>
+      </tr>
+    </tbody>
+    {% else %}
+    {% endif %}
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

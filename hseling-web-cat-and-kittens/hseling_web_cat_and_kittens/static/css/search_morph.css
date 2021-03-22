@@ -1,0 +1,8 @@
+.wrapper {
+    display: flex;
+    margin: 30px;
+}
+
+.form-check {
+    margin:10px;
+}

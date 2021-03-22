@@ -1,0 +1,20 @@
+.proPic{
+    height: 150px;
+    width: 150px;
+    border-radius: 100%;
+}
+.proPic img{
+    height: 100%;
+    width: 100%;
+    border-radius: 100%;
+}
+.logExt {
+    position: absolute;
+    padding-top: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: #31A2B8;
+    border-radius: 3px 0 0 3px;
+    color: #ffffff;
+    min-width: 160px;
+}
