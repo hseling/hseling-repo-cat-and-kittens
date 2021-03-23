@@ -1,6 +1,11 @@
-FROM hseling/hseling-api-base:python3.6-alpine3.7 as hseling_api_build
+FROM hseling/hseling-api-base:python3.6 as hseling_api_build
 
 LABEL maintainer="Andrea Grillandi <andrea.grillandi@live.it>"
+
+RUN apt-get update && \
+    apt-get -y install gcc
+
+RUN pip install --upgrade pip
 
 RUN mkdir /dependencies
 COPY ./hseling-api-cat-and-kittens/requirements.txt /dependencies/requirements.txt
@@ -10,8 +15,8 @@ RUN pip install -r /dependencies/requirements.txt
 
 FROM hseling/hseling-api-base:python3.6-alpine3.7 as production
 
-COPY --from=hseling_api_build /usr/local/lib/python3.6/site-packages /usr/local/lib/python3.6/site-packages
-COPY --from=hseling_api_build /usr/lib/python3.6/site-packages /usr/lib/python3.6/site-packages
+# COPY --from=hseling_api_build /usr/local/lib/python3.6/site-packages /usr/local/lib/python3.6/site-packages
+# COPY --from=hseling_api_build /usr/lib/python3.6/site-packages /usr/lib/python3.6/site-packages
 
 COPY --from=hseling_api_build /dependencies /dependencies
 
