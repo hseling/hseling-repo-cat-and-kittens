@@ -1,3 +1,20 @@
+function formatProblemContext(problem){
+    let context = problem.context;
+    let formattedContext = context;
+    if (typeof context === "string" &&
+        typeof problem.context_pos === "number" &&
+        typeof problem.context_end === "number" &&
+        problem.context_pos >= 0 &&
+        problem.context_pos < context.length-1 &&
+        problem.context_end > 0 &&
+        problem.context_end <= context.length-1
+        ){
+            let pretext = context.slice(0, problem.context_pos);
+            let problemText = context.slice(problem.context_pos, problem.context_end);
+            let posttext = context.slice(problem.context_end);
+        }
+}
+
 var setupUploadFileAndCheckSpelling = function() {
     $('#docx-file').change(function() {
         console.log("#docx-file changed")

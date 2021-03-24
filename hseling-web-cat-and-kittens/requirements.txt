@@ -5,6 +5,7 @@ lxml
 html5lib
 beautifulsoup4
 jsonrpclib-pelix
+charset_normalizer
 
 flask-mysqldb
 flask_sqlalchemy==2.4.4

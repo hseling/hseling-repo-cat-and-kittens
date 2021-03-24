@@ -78,6 +78,8 @@ class SpellChecker:
                     problem['context'] = current_sent
                     problem['pos'] += current_beginning_id
                     problem['end'] = problem['pos'] + problem['len']
+                    problem['context_pos'] = problem['pos'] - current_sent_data['pos']
+                    problem['context_end'] = problem['end'] - current_sent_data['pos']
                    # print('отформатирован абзац')
             current_beginning_id = current_beginning_id + len(paragraph) + 1
         return paragraph_problems
