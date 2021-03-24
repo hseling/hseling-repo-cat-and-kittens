@@ -13,13 +13,6 @@ def save_file_first_time_and_get_id(file):
     file.save(get_txt_path(file_id))
     return file_id
 
-#def save_text_first_time_and_get_id(text):
-#    text_id = uuid1().hex
-#    txt_name = text_id + '.txt'
-#    with open(os.path.join(UPLOAD_FOLDER, txt_name), 'w', encoding='utf-8') as f:
-#        f.write(text)
-#    return text_id
-
 def save_next_version(text, file_id):
     with open(get_txt_path(file_id), 'w', encoding='utf-8') as f:
         f.write(text)
