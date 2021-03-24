@@ -12,7 +12,9 @@ function formatProblemContext(problem){
             let pretext = context.slice(0, problem.context_pos);
             let problemText = context.slice(problem.context_pos, problem.context_end);
             let posttext = context.slice(problem.context_end);
+            formattedContext = pretext+'<b>'+problemText+'<\b>'+posttext;
         }
+    return formattedContext
 }
 
 var setupUploadFileAndCheckSpelling = function() {
@@ -33,7 +35,7 @@ var setupUploadFileAndCheckSpelling = function() {
                     if (Array.isArray(spelling_problems) && spelling_problems.length > 0) {
                         //Создаем радиокнопки для вариантов исправления, по умолчанию выбран вариант "не исправлять"
                         spelling_problems.forEach(function(problem, problemId) {
-                            var formattedText = problem.context;
+                            var formattedText = formatProblemContext(problem);
                             var correctionOptions = problem.s;
                             problemHtml = `<legend>${formattedText}</legend>`;
                             problemHtml += `
