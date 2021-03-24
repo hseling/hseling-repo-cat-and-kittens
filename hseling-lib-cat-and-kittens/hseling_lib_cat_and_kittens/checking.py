@@ -41,8 +41,7 @@ class MorphologyChecker(AbstractAspectChecker):
     input_type = 'connlu_tokenlists'
 
     def check(self, tokenlists):
-        #Andrea, please, put the implementation here
-        return []
+        return correction(tokenlists)
 
 
 
