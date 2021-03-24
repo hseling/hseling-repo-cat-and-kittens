@@ -20,7 +20,7 @@ function sendChoiceToParent(){
   var inputs = form.getElementsByTagName('input')
   var checked = [];
   for (var i = 0; i < inputs.length; i++) {
-    if (inputs[i].type == 'checkbox' && inputs[i].checked) {
+    if (inputs[i].type == 'radio' && inputs[i].checked) {
         checked.push(inputs[i].value);
       }
     }

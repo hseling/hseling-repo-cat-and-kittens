@@ -2,10 +2,9 @@ FROM hseling/hseling-api-base:python3.6 as hseling_api_build__
 
 LABEL maintainer="Andrea Grillandi <andrea.grillandi@live.it>"
 
-RUN apt-get update && \
-    apt-get -y install gcc
-
 RUN pip install --upgrade pip
+
+RUN apk --no-cache add musl-dev linux-headers g++
 
 RUN mkdir /dependencies
 COPY ./hseling-api-cat-and-kittens/requirements.txt /dependencies/requirements.txt

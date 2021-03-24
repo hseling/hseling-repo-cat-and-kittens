@@ -3,8 +3,8 @@
 
 {% block links %}
 <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
-  <link href="../static/css/bootstrap.css" rel="stylesheet">
-  <link href="../static/css/sticky-footer-navbar.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/sticky-footer-navbar.css') }}" rel="stylesheet">
   {% endblock %}
 
   {% block content %}
@@ -62,7 +62,7 @@
   <footer class="footer">
     <div class="container custom-footer">
       <span class="text-muted">
-        <img class="cat-image" src="../static/img/cat3.jpg" />
+        <img class="cat-image" src="{{ url_for('static', filename='img/cat3.jpg') }}" />
       </span>
     </div>
   </footer>

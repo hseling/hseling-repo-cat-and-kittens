@@ -1,5 +1,13 @@
 var response = $("#response-table").data("db");
 
+String.prototype.replaceAll = function(search, replacement) {
+  var target = this;
+  return target.replace(new RegExp(search, 'g'), replacement);
+};
+
+const regex_start = /(?<=\s)\%{3}/
+const regex_end = /(?<=\S)\%{3}/
+
 // Builds the HTML Table out of response.
 function buildHtmlTable(selector) {
     var columns = addAllColumnHeaders(response, selector);
@@ -9,6 +17,8 @@ function buildHtmlTable(selector) {
       row$.append($('<tr/>'));
       for (var colIndex = 0; colIndex < columns.length; colIndex++) {
         var cellValue = response[i][columns[colIndex]];
+        cellValue = cellValue.replaceAll(regex_start, "<strong>");
+        cellValue = cellValue.replaceAll(regex_start, "<strong>");
         if (cellValue == null) cellValue = "";
         row$.append($('<td/>').html(cellValue));
       }
@@ -37,3 +47,13 @@ function buildHtmlTable(selector) {
   
     return columnSet;
   }
+
+var type = $(".link-to-new-search").data("page");
+
+if (type == "collocations") {
+  $(".link-to-search").attr("href", "{{ url_for('collocations') }}")
+} else if (type == "search") {
+  $(".link-to-search").attr("href", "{{ url_for('search') }}")
+} else {
+  $(".link-to-search").attr("href", "{{ url_for('index') }}")
+}

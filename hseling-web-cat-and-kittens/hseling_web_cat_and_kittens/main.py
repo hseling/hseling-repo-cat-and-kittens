@@ -1,4 +1,4 @@
-import os
+import os, sys
 from base64 import b64decode, b64encode
 # from flask import Flask, Blueprint, render_template, request, redirect, jsonify
 from logging import getLogger
@@ -11,6 +11,8 @@ import hseling_web_cat_and_kittens.spelling
 import hseling_web_cat_and_kittens.constants
 # import secrets
 # from readability import countFKG, uniqueWords
+
+from hseling_web_cat_and_kittens import boilerplate
 
 from sqlalchemy.sql.schema import BLANK_SCHEMA
 from flask_sqlalchemy import SQLAlchemy
@@ -299,34 +301,57 @@ def history():
 def index():
     return render_template('index.html', title='Home')
 
-@app.route('/web/search', methods=['GET', 'POST'])
+@app.route('/web/search', methods=['GET'])
 def search():
-    
-    if request.method == "GET":
-        tk = secrets.token_urlsafe()
-        session['csrftoken'] = str(tk)
-        session_csrftoken = session['csrftoken']
-        return render_template('search.html', title='Search', random_token=session_csrftoken)
+    tk = secrets.token_urlsafe()
+    session['csrftoken'] = str(tk)
+    session_csrftoken = session['csrftoken']
+    return render_template('search.html', title='Search', random_token=session_csrftoken)        
 
-    else:
+@app.route('/web/lemma_search', methods=['GET', 'POST'])
+def lemma_search():
+    if request.method == 'POST':
         details = request.form
-        search_token = details['search']
-        csrftoken = details['csrfmiddlewaretoken']
-        if csrftoken == session.get('csrftoken', None):
-            frequency = 'freq_all'
-            cur = mysql.connection.cursor()
-            stmt = '''SELECT unigrams.%(freq)s as frequency, lemmas.lemma as lemma
-            FROM unigrams 
-            JOIN lemmas ON unigrams.lemma = lemmas.id_lemmas
-            WHERE unigrams.unigram = "%(src_token)s";'''
-            cur.execute(stmt, {'freq' : frequency, 'src_token' : search_token})
-            row_headers = [x[0] for x in cur.description]
-            rv = cur.fetchall()
-            json_data = []
-            for result in rv:
-                json_data.append(dict(zip(row_headers, result)))
+        if details['lemma1'] != None or details['lemma2'] != None:
+            lemma1 = details['lemma1'] if details['lemma1'] != None else ""
+            lemma2 = details['lemma2'] if details['lemma2'] != None else ""
+            morph1 = details['morph1'] if details['morph1'] != None else ""
+            morph2 = details['morph2'] if details['morph2'] != None else ""
+            syntrole = details['syntax'] if details['syntax'] != "syntrole" else ""
+            min_ = details['min'] if details['min'] != None else ""
+            max_ = details['max'] if details['max'] != None else ""
+            csrftoken = details['csrfmiddlewaretoken']
+            if csrftoken == session.get('csrftoken', None):
+                api_endpoint = get_server_endpoint() + "/lemma_search?"
+                api_endpoint += "&lemma1=" + lemma1
+                api_endpoint += "&lemma2=" + lemma2
+                api_endpoint += "&morph1=" + morph1
+                api_endpoint += "&morph2=" + morph2
+                api_endpoint += "&syntrole=" + syntrole
+                api_endpoint += "&min=" + min_
+                api_endpoint += "&max=" + max_
+                result = requests.get(api_endpoint).content
+                return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=lemma1, type="search")
+            else:
+                return "Error 404"
+    else:
+        return redirect('/web/search')
 
-            return render_template('db_response.html', response=json.dumps(json_data), token=search_token)
+@app.route('/web/single_token', methods=['GET', 'POST'])
+def single_token():
+    if request.method == 'POST':
+        details = request.form
+        if details['search'] != None:
+            search_token = details['search'] if details['search'] != None else ""
+            csrftoken = details['csrfmiddlewaretoken']
+            if csrftoken == session.get('csrftoken', None):
+                api_endpoint = get_server_endpoint() + "/single_token_search?token=" + search_token
+                result = requests.get(api_endpoint).content
+                return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=search_token, type="search")
+            else:
+                return "Error 400"
+    else:
+        return redirect('/web/search')
 
 @app.route('/web/search_morph')
 def search_morph():
@@ -339,75 +364,32 @@ def base():
 @app.route('/web/collocations', methods=['GET', 'POST'])
 def collocations():
 
-    domain_tokens_dict = {'Linguistics' : 3, 'Sociology' : 6, 'History' : 5, 'Law' : 2, 'Psychology' : 4, 'Economics' : 1}
-
     if request.method == "GET":
-        return render_template('collocations.html', title='Collocations')
+        tk = secrets.token_urlsafe()
+        session['csrftoken'] = str(tk)
+        session_csrftoken = session['csrftoken']
+        return render_template('collocations.html', title='Collocations', csrf_token=session_csrftoken)
 
     else:
         details = request.form
         search_token = details['search_collocations']
-        search_metric = details['search-metric'].lower()
-        search_domain = details['search-domain']
-
-        if search_domain == 'Лингвистика':
-            domain_token = domain_tokens_dict.get('Linguistics')
-        elif search_domain == 'Социология':
-            domain_token = domain_tokens_dict.get('Sociology')
-        elif search_domain == 'История':
-            domain_token = domain_tokens_dict.get('History')
-        elif search_domain == 'Юриспруденция':
-            domain_token = domain_tokens_dict.get('Law')
-        elif search_domain == 'Психология и педагогика':
-            domain_token = domain_tokens_dict.get('Psychology')
-        elif search_domain == 'Экономика':
-            domain_token = domain_tokens_dict.get('Economics')
-        else:
-            domain_token = None
-        
-        if domain_token:
-            frequency = f'd{domain_token}_freq'
-            pmi = f'd{domain_token}_pmi'
-            tscore = f'd{domain_token}_tsc'
-            logdice = f'd{domain_token}_logdice'
-
-        else: 
-            frequency = 'raw_frequency'
-            pmi = 'pmi'
-            tscore = 'tscore'
-            logdice = 'logdice'
-        
-    
-        cur = mysql.connection.cursor()
-        stmt = '''SELECT tab2.unigram_token as entered_search, 
-        tab1.unigram as collocate,
-        frequency,
-        pmi,
-        t_score,
-        logdice
-        FROM unigrams as tab1
-        JOIN
-        (SELECT 
-        unigrams.unigram as unigram_token, 
-        2grams.wordform_2 as collocate_id, 
-        2grams.%(frequency)s as frequency,
-        2grams.%(pmi)s as pmi,
-        2grams.%(tscore)s as t_score,
-        2grams.%(logdice)s as logdice
-        FROM unigrams
-        JOIN 2grams ON unigrams.id_unigram = 2grams.wordform_1 
-        WHERE unigrams.unigram = "%(search_token)s") as tab2
-        ON tab2.collocate_id = tab1.id_unigram
-        ORDER BY %(search_metric)s DESC
-        LIMIT 20;'''
-        cur.execute(stmt, { 'frequency' : frequency, 'pmi' : pmi, 'tscore' : tscore,
-        'logdice' : logdice, 'search_token' : search_token, 'search_metric' : search_metric})
-        row_headers = [x[0] for x in cur.description]
-        rv = cur.fetchall()
-        json_data = []
-        for result in rv:
-            json_data.append(dict(zip(row_headers, result)))
-        return render_template('db_response.html', response=json.dumps(json_data), token=search_token)
+        csrftoken = details['csrfmiddlewaretoken']
+        if csrftoken == session.get('csrftoken', None):
+            search_token = details['search_collocations']
+            search_metric = details['search-metric']
+            search_metric = boilerplate.metric_converter(search_metric)
+            search_domain = details['search-domain']
+            search_domain = boilerplate.domain_to_index(search_domain)
+            api_endpoint = get_server_endpoint() + "/bigram_search?token=" + search_token + "&metric="
+            api_endpoint += search_metric + "&domain=" + str(search_domain)
+            result = requests.get(api_endpoint).content
+            result = json.loads(result)
+            result = result["values"]
+            if not result:
+                return 'Error 400'
+            else: 
+                return render_template('db_response.html', response=json.dumps(result), token=search_token, type="collocations")
+        else: "Error 400"
 
 @app.route('/web/render_upload_file', methods=['GET'])
 def render_upload_file():
