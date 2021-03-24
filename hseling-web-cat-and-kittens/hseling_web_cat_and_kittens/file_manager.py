@@ -9,7 +9,6 @@ def get_txt_path(file_id):
     return os.path.join(UPLOAD_FOLDER, txt_name)
 
 def save_file_first_time_and_get_id(file):
-
     file_id = secrets.token_urlsafe(16)
     file.save(get_txt_path(file_id))
     return file_id
