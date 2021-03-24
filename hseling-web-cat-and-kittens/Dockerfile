@@ -1,4 +1,4 @@
-FROM hseling/hseling-api-base:python3.6-alpine3.7 as hseling_web_build
+FROM hseling/hseling-api-base:python3.6 as hseling_web_build__
 
 LABEL maintainer="Andrea Grillandi <andrea.grillandi@live.it>"
 
@@ -12,12 +12,13 @@ COPY ./hseling-web-cat-and-kittens/setup.py /dependencies/setup.py
 
 RUN pip install -r /dependencies/requirements.txt
 
+FROM hseling/hseling-api-base:python3.6-alpine3.7 as hseling_web_build
 FROM hseling/hseling-api-base:python3.6-alpine3.7 as hseling_web_production
 
 COPY --from=hseling_web_build /usr/local/lib/python3.6/site-packages /usr/local/lib/python3.6/site-packages
 COPY --from=hseling_web_build /usr/lib/python3.6/site-packages /usr/lib/python3.6/site-packages
 
-COPY --from=hseling_web_build /dependencies /dependencies
+COPY --from=hseling_web_build__ /dependencies /dependencies
 
 COPY ./hseling-web-cat-and-kittens/hseling_web_cat_and_kittens /app/hseling_web_cat_and_kittens
 COPY ./hseling-web-cat-and-kittens/hseling_web_cat_and_kittens/static /app/static
