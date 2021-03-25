@@ -13,17 +13,11 @@ punctuation = set(punctuation)
 from nltk.corpus import stopwords
 stops = stopwords.words('russian')
 
-numbers = re.compile("[0-9]")
-latins = re.compile(r"([a-zA-Z]+\W+)|(\W+[a-zA-Z]+)|(\W+[a-zA-Z]\W+)|([a-zA-Z]+)")
-cyrillic = re.compile(r"([а-яА-ЯёЁ]+\W+)|(\W+[а-яА-ЯёЁ]+)|(\W+[а-яА-ЯёЁ]\W+)")
-initial = re.compile(r"[а-яА-ЯёЁ]\.")
+NUMBERS = re.compile("[0-9]")
+LATINS = re.compile(r"([a-zA-Z]+\W+)|(\W+[a-zA-Z]+)|(\W+[a-zA-Z]\W+)|([a-zA-Z]+)")
+CYRILLIC = re.compile(r"([а-яА-ЯёЁ]+\W+)|(\W+[а-яА-ЯёЁ]+)|(\W+[а-яА-ЯёЁ]\W+)")
 
-con = mysql.connector.connect(user='andrea',
-                              password='rstq!2Ro',
-                              host='127.0.0.1',
-                              database='cat',
-                              auth_plugin='mysql_native_password'
-                             )
+CONN = boilerplate.get_mysql_connection()
 
 class Tagset:
     def __init__(self, unigram, lemm, morph, pos, start_id, end_id):
@@ -53,15 +47,11 @@ class Tagset:
             ('pos', self.pos), ('start_id', self.start_id), ('end_id', self.end_id)])
 
 
-def parser(conllu, from_file=False):
+def parser(conllu):
     """
     Yields a sentence from conllu tree with its tags
 
     """
-    if from_file:
-        with open(conllu, 'r', encoding='utf-8') as f:
-            conllu = f.read()
-
     tree = parse(conllu)
 
     for token in tree:
@@ -110,14 +100,14 @@ def tagset_lemma(words):
     return word_list
 
 
-def morph_error_catcher(words):
+def morph_error_catcher(words, con=CONN, num=NUMBERS, lat=LATINS, cyr=CYRILLIC):
     mistakes = {}
     corrects = {}
     cur = con.cursor(dictionary=True, buffered=True)
     for i, word in enumerate(words):
         if word['unigram'].lower() not in punctuation and word['unigram'].lower() not in stops and \
-        not numbers.match(word['unigram'].lower()) and not latins.search(word['unigram'].lower()) and \
-        not cyrillic.search(word['unigram'].lower()) and word['pos'] != 'PROPN':
+        not num.match(word['unigram'].lower()) and not lat.search(word['unigram'].lower()) and \
+        not cyr.search(word['unigram'].lower()) and word['pos'] != 'PROPN':
 
             time.sleep(uniform(0.2, 0.6))
 
@@ -137,42 +127,17 @@ def morph_error_catcher(words):
     return mistakes, corrects
 
 
-def correction(text, corrected_files_directory='corrections', print_correction=False, from_file=False):
+def correction(conllu):
     '''
     conllu: path to conllu format file or conllu data
     text: variable open in 'r' mode
     corrected_files_directory: directory path where the corrected txt file should end up
     print_correction = flag in to get a txt file with correction in the destination directory
     '''
-
-    conllu = make_conll_with_udpipe(text)
-    # tagset creation
     words, _ = get_words(conllu)
     tagset = tagset_lemma(words)
     mistakes, _ = morph_error_catcher(tagset)
     mistakes_list = mistakes.values()
-
-    if print_correction == True:
-
-        tot=0
-        mists=0
-        correction = list()
-        for i, word in enumerate(tagset):
-            if i in mistakes:
-                correction.append('++'+word['unigram']+'++')
-                mists+=1
-                tot+=1
-            else:
-                correction.append(word['unigram'])
-                tot+=1
-        correction = ' '.join(correction)
-
-        os.makedirs(os.path.join(os.getcwd(), corrected_files_directory), exist_ok=True)
-        with open(os.path.join(corrected_files_directory, filename[:-6]+'txt'), 'w', encoding='utf-8') as fw:
-            fw.write(correction)
-            fw.write('\n\n')
-            fw.write(str(mistakes_list))
-        print(correction, "\n\nCorrected words: %s" %mists, "\nMistake frequency: %s" %(mists/tot))
 
     return list(mistakes_list)
 

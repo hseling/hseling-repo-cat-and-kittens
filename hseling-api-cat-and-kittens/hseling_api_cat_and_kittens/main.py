@@ -37,6 +37,10 @@ log = getLogger(__name__)
 
 ALLOWED_EXTENSIONS = ['txt']
 
+MODELS_DIR = '/dependencies/hseling-lib-cat-and-kittens/models/'
+MODEL_NAMES = {
+    'russian': 'russian-syntagrus-ud-2.5-191206.udpipe'
+}
 
 def do_process_task(file_ids_list):
     files_to_process = boilerplate.list_files(recursive=True,
