@@ -23,13 +23,13 @@ var setupUploadFileAndCheckSpelling = function() {
         $('#docx-form').ajaxSubmit({
             method: 'post',
             type: 'post',
-            url: '/upload_file',
+            url: 'web/upload_file',
             success: function(data) {
                 // После загрузки файла очистим форму.
                 console.log(data);
                 let file_id = data.file_id;
                 //Запрашиваем данные об орфографических ошибках
-                $.get(`/get_spelling_problems/${file_id}`, function(data) {
+                $.get(`web/get_spelling_problems/${file_id}`, function(data) {
                     console.log(data.spelling_problems);
                     let spelling_problems = data.spelling_problems;
                     if (Array.isArray(spelling_problems) && spelling_problems.length > 0) {
@@ -54,7 +54,7 @@ var setupUploadFileAndCheckSpelling = function() {
                             });
                             $('.spelling_options').append(problemHtml);
                         });
-                        //При нажатии на кнопку отправки орфографии собираем выбранные варианты 
+                        //При нажатии на кнопку отправки орфографии собираем выбранные варианты
                         $("input[name='submit_spelling']").bind('click', function() {
                             spelling_problems.forEach(function(problem, problemId) {
                                 var chosen_value = $(`input[name=${problemId}]:checked`).val();
@@ -64,7 +64,7 @@ var setupUploadFileAndCheckSpelling = function() {
                             //И отправляем на сервер для внесения исправлений
                             $.ajax({
                                 type: "POST",
-                                url: "/correct_spelling",
+                                url: "web/correct_spelling",
                                 dataType: "json",
                                 contentType: "application/json; charset=utf-8",
                                 data: JSON.stringify({
@@ -82,7 +82,7 @@ var setupUploadFileAndCheckSpelling = function() {
                         //Если ошибок не было, сразу идем
                     } else {
                         window.location.replace(
-                            encodeURI(`/analysis?file_id=${file_id}`)
+                            encodeURI(`web/analysis?file_id=${file_id}`)
                         );
                     }
                 })
