@@ -11,14 +11,13 @@ from hseling_api_cat_and_kittens import boilerplate
 
 from string import punctuation
 punctuation += '«»—…“”–•'
-punctuation = set(punctuation)
+PUNCT = set(punctuation)
 from nltk.corpus import stopwords
-stops = stopwords.words('russian')
+STOPS = stopwords.words('russian')
 
-numbers = re.compile("[0-9]")
-latins = re.compile(r"([a-zA-Z]+\W+)|(\W+[a-zA-Z]+)|(\W+[a-zA-Z]\W+)|([a-zA-Z]+)")
-cyrillic = re.compile(r"([а-яА-ЯёЁ]+\W+)|(\W+[а-яА-ЯёЁ]+)|(\W+[а-яА-ЯёЁ]\W+)")
-initial = re.compile(r"[а-яА-ЯёЁ]\.")
+NUMBERS = re.compile("[0-9]")
+LATINS = re.compile(r"([a-zA-Z]+\W+)|(\W+[a-zA-Z]+)|(\W+[a-zA-Z]\W+)|([a-zA-Z]+)")
+CYRILLIC = re.compile(r"([а-яА-ЯёЁ]+\W+)|(\W+[а-яА-ЯёЁ]+)|(\W+[а-яА-ЯёЁ]\W+)")
 
 CONN = boilerplate.get_mysql_connection()
 
@@ -103,14 +102,14 @@ def tagset_lemma(words):
     return word_list
 
 
-def morph_error_catcher(words, con=CONN):
+def morph_error_catcher(words, con=CONN, stop=STOPS, num=NUMBERS, lat=LATINS, cyr=CYRILLIC):
     mistakes = {}
     corrects = {}
     cur = con.cursor(dictionary=True, buffered=True)
     for i, word in enumerate(words):
-        if word['unigram'].lower() not in punctuation and word['unigram'].lower() not in stops and \
-        not numbers.match(word['unigram'].lower()) and not latins.search(word['unigram'].lower()) and \
-        not cyrillic.search(word['unigram'].lower()) and word['pos'] != 'PROPN':
+        if word['unigram'].lower() not in punctuation and word['unigram'].lower() not in stop and \
+        not num.match(word['unigram'].lower()) and not lat.search(word['unigram'].lower()) and \
+        not cyr.search(word['unigram'].lower()) and word['pos'] != 'PROPN':
 
             time.sleep(uniform(0.2, 0.6))
 
