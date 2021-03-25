@@ -9,9 +9,9 @@ from conllu import parse, parse_tree
 
 from string import punctuation
 punctuation += '«»—…“”–•'
-punctuation = set(punctuation)
+PUNCTUATION = set(punctuation)
 from nltk.corpus import stopwords
-stops = stopwords.words('russian')
+STOPS = stopwords.words('russian')
 
 NUMBERS = re.compile("[0-9]")
 LATINS = re.compile(r"([a-zA-Z]+\W+)|(\W+[a-zA-Z]+)|(\W+[a-zA-Z]\W+)|([a-zA-Z]+)")
@@ -100,16 +100,14 @@ def tagset_lemma(words):
     return word_list
 
 
-def morph_error_catcher(words, con=CONN, num=NUMBERS, lat=LATINS, cyr=CYRILLIC):
+def morph_error_catcher(words, con=CONN, num=NUMBERS, lat=LATINS, cyr=CYRILLIC, punct=PUNCTUATION, stops=STOPS):
     mistakes = {}
     corrects = {}
     cur = con.cursor(dictionary=True, buffered=True)
     for i, word in enumerate(words):
-        if word['unigram'].lower() not in punctuation and word['unigram'].lower() not in stops and \
+        if word['unigram'].lower() not in punct and word['unigram'].lower() not in stops and \
         not num.match(word['unigram'].lower()) and not lat.search(word['unigram'].lower()) and \
         not cyr.search(word['unigram'].lower()) and word['pos'] != 'PROPN':
-
-            time.sleep(uniform(0.2, 0.6))
 
             cur.execute("""SELECT unigram, lemm, morph, pos FROM
                         (SELECT unigram, morph, lemma FROM unigrams) AS a JOIN

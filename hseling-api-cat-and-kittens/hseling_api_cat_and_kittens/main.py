@@ -7,7 +7,7 @@ from logging import getLogger
 
 from hseling_api_cat_and_kittens import boilerplate, db_queries
 
-from hseling_lib_cat_and_kittens.process import process_data
+from hseling_lib_cat_and_kittens.process import process_data, process_udpipe
 from hseling_lib_cat_and_kittens.query import query_data
 
 
@@ -66,6 +66,28 @@ def do_process_task(file_ids_list):
 @celery.task
 def process_task(file_ids_list=None):
     return do_process_task(file_ids_list)
+
+@celery.task
+def parse_file(text):
+    from ufal.udpipe import Model, Pipeline
+    model_path = MODELS_DIR + MODEL_NAMES['russian']
+    model = Model.load(model_path)
+    pipeline = Pipeline(model, 'tokenizer=ranges', Pipeline.DEFAULT, Pipeline.DEFAULT, 'conllu')
+    return process_udpipe(text, pipeline)
+
+@app.route('/api/udpipe')
+def udpify():
+    from ufal.udpipe import Model, Pipeline
+    model_path = MODELS_DIR + MODEL_NAMES['russian']
+    model = Model.load(model_path)
+    pipeline = Pipeline(model, 'tokenizer=ranges', Pipeline.DEFAULT, Pipeline.DEFAULT, 'conllu')
+    token = request.args.get("token")
+    if token:
+        solution = pipeline.process(token)
+    else:
+        solution = pipeline.process("Руссий текст")
+    return jsonify({'solution' : str(solution)})
+
 @app.route('/api/healthz')
 def healthz():
     app.logger.info('Health checked')

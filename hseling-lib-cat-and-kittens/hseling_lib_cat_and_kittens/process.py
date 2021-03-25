@@ -12,3 +12,6 @@ def process_data(data_to_process):
 
     if result:
         yield None, '\n'.join(sorted(list(result)))
+
+def process_udpipe(text, pipeline):
+    return pipeline.process(text)
