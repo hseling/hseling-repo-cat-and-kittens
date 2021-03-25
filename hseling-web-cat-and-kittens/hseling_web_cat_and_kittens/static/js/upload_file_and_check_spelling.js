@@ -23,13 +23,13 @@ var setupUploadFileAndCheckSpelling = function() {
         $('#docx-form').ajaxSubmit({
             method: 'post',
             type: 'post',
-            url: 'web/upload_file',
+            url: 'upload_file',
             success: function(data) {
                 // После загрузки файла очистим форму.
                 console.log(data);
                 let file_id = data.file_id;
                 //Запрашиваем данные об орфографических ошибках
-                $.get(`web/get_spelling_problems/${file_id}`, function(data) {
+                $.get(`get_spelling_problems/${file_id}`, function(data) {
                     console.log(data.spelling_problems);
                     let spelling_problems = data.spelling_problems;
                     if (Array.isArray(spelling_problems) && spelling_problems.length > 0) {
@@ -64,7 +64,7 @@ var setupUploadFileAndCheckSpelling = function() {
                             //И отправляем на сервер для внесения исправлений
                             $.ajax({
                                 type: "POST",
-                                url: "web/correct_spelling",
+                                url: "correct_spelling",
                                 dataType: "json",
                                 contentType: "application/json; charset=utf-8",
                                 data: JSON.stringify({
@@ -82,7 +82,7 @@ var setupUploadFileAndCheckSpelling = function() {
                         //Если ошибок не было, сразу идем
                     } else {
                         window.location.replace(
-                            encodeURI(`web/analysis?file_id=${file_id}`)
+                            encodeURI(`analysis?file_id=${file_id}`)
                         );
                     }
                 })
