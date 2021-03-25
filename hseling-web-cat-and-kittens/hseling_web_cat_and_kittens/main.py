@@ -459,7 +459,7 @@ def aspects_checking():
     aspects = data['chosen_aspects']
     if not hasattr(aspects, '__iter__') or any([aspect not in constants.possible_aspects for aspect in aspects]):
         aspects = constants.possible_aspects
-    checker_respond = request.post("/api/check_student_text", data={'text': text, 'aspects':aspects})
+    checker_respond = request.post(get_server_endpoint() + "/check_student_text", data={'text': text, 'aspects':aspects})
     if checker_respond.status_code == 200:
         problems = checker_respond.json
     else:

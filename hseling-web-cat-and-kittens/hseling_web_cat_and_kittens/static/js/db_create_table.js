@@ -18,7 +18,7 @@ function buildHtmlTable(selector) {
       for (var colIndex = 0; colIndex < columns.length; colIndex++) {
         var cellValue = response[i][columns[colIndex]];
         cellValue = cellValue.replaceAll(regex_start, "<strong>");
-        cellValue = cellValue.replaceAll(regex_start, "<strong>");
+        cellValue = cellValue.replaceAll(regex_end, "</strong>");
         if (cellValue == null) cellValue = "";
         row$.append($('<td/>').html(cellValue));
       }
