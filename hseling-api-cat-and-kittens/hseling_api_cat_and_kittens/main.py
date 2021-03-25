@@ -9,6 +9,7 @@ from hseling_api_cat_and_kittens import boilerplate, db_queries
 
 from hseling_lib_cat_and_kittens.process import process_data, process_udpipe
 from hseling_lib_cat_and_kittens.query import query_data
+from hseling_api_cat_and_kittens.hseling_api_cat_and_kittens import checking
 
 
 app = Flask(__name__)
@@ -204,6 +205,18 @@ def lemma_search_endpoint():
     search_min = request.args.get("min")
     search_max = request.args.get("max")
     return jsonify({"values": db_queries.lemma_search(search_lemma1, search_lemma2, search_morph1, search_morph2, search_syntrole, search_min, search_max)})
+
+@app.route("/api/check_text", methods=['POST'])
+def check_text():
+    data = request.get_json()
+    text = data['text'] if 'text' in data else ''
+    aspects = data['aspects'] if 'aspects' in data else None
+    problems = checking.check_text(text, aspects)
+    return jsonify({'problems': problems})
+
+
+
+
 
 @app.route("/api/")
 def main_endpoint():

@@ -185,7 +185,7 @@ def register():
             squlitedb.session.commit()
             flash('Registration was successfull')
             return redirect(url_for('login'))
-        
+
         else:
             flash('Password Dose not Match')
             return redirect(url_for('register'))
@@ -265,7 +265,7 @@ def upload():
         squlitedb.session.commit()
         flash('Your content is updated!')
         return redirect(url_for('upload'))
-    
+
     else:
         return render_template('user/upload.html')
 
@@ -306,7 +306,7 @@ def search():
     tk = secrets.token_urlsafe()
     session['csrftoken'] = str(tk)
     session_csrftoken = session['csrftoken']
-    return render_template('search.html', title='Search', random_token=session_csrftoken)        
+    return render_template('search.html', title='Search', random_token=session_csrftoken)
 
 @app.route('/web/lemma_search', methods=['GET', 'POST'])
 def lemma_search():
@@ -387,7 +387,7 @@ def collocations():
             result = result["values"]
             if not result:
                 return 'Error 400'
-            else: 
+            else:
                 return render_template('db_response.html', response=json.dumps(result), token=search_token, type="collocations")
         else: "Error 400"
 
@@ -434,7 +434,7 @@ def get_statistics(file_id):
     text = get_last_version(file_id)
     readability_score = countFKG(text)
     total, unique = uniqueWords(text)
-    return jsonify({'readability_score': readability_score, 
+    return jsonify({'readability_score': readability_score,
                     'total_words': total,
                     'unique_words': unique})
 
@@ -451,17 +451,17 @@ def save_edited_text():
     save_next_version(text, file_id)
     return jsonify({'success':True})
 
-@app.route('/web/aspects_checking', methods=['POST']) 
+@app.route('/web/aspects_checking', methods=['POST'])
 def aspects_checking():
     data = request.get_json()
-    file_id = data['file_id'] 
-    text = get_last_version(file_id)  
+    file_id = data['file_id']
+    text = get_last_version(file_id)
     aspects = data['chosen_aspects']
     if not hasattr(aspects, '__iter__') or any([aspect not in constants.possible_aspects for aspect in aspects]):
         aspects = constants.possible_aspects
-    checker_respond = request.post(get_server_endpoint() + "/check_student_text", data={'text': text, 'aspects':aspects})
-    if checker_respond.status_code == 200:
-        problems = checker_respond.json
+    checker_respond = request.post(get_server_endpoint() + "/check_text", data={'text': text, 'aspects':aspects})
+    if checker_respond.status_code == 200 and 'problems' in checker_respond.json:
+        problems = checker_respond.json['problems']
     else:
         problems = {aspect:[] for aspect in aspects}
     return jsonify({'problems':problems, 'text': text})
