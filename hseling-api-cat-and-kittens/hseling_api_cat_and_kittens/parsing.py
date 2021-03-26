@@ -3,8 +3,13 @@ import os
 import re
 import conllu
 
+MODELS_DIR = '/dependencies/hseling-api-cat-and-kittens/models/'
+MODEL_NAMES = {
+    'russian': 'russian-syntagrus-ud-2.5-191206.udpipe'
+}
+
 def make_conll_with_udpipe(text):
-    model_path = os.path.join(os.getcwd(), 'udparsers', 'russian-syntagrus-ud-2.5-191206.udpipe') # здесь указать путь к модели
+    model_path = MODELS_DIR + MODEL_NAMES['russian']
     model = Model.load(model_path)
     pipeline = Pipeline(model, 'tokenizer=ranges', Pipeline.DEFAULT, Pipeline.DEFAULT, 'conllu')
     udpipe_output =  pipeline.process(text)

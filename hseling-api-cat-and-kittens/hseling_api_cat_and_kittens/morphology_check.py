@@ -3,7 +3,6 @@ import pandas as pd
 import os
 import re
 import time
-from parsing import *
 from random import randint, uniform
 from conllu import parse, parse_tree
 
@@ -12,6 +11,8 @@ from hseling_api_cat_and_kittens import boilerplate
 from string import punctuation
 punctuation += '«»—…“”–•'
 PUNCT = set(punctuation)
+import nltk
+nltk.download('stopwords')
 from nltk.corpus import stopwords
 STOPS = stopwords.words('russian')
 

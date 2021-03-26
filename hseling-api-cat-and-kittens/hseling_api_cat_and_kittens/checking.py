@@ -1,6 +1,6 @@
-from hseling_api_cat_and_kittens.hseling_api_cat_and_kittens.morphology_check import *
-from hseling_lib_cat_and_kittens.hseling_lib_cat_and_kittens.syntax import *
-from hseling_lib_cat_and_kittens.hseling_lib_cat_and_kittens.duplicates import check_duplicates
+from hseling_api_cat_and_kittens.morphology_check import *
+from hseling_lib_cat_and_kittens.syntax import *
+from hseling_lib_cat_and_kittens.duplicates import check_duplicates
 from abc import ABC, abstractmethod
 from parsing import make_conll_with_udpipe
 
@@ -62,7 +62,7 @@ class DuplicatesChecker(AbstractAspectChecker):
 
 
 
-  ASPECT2CHECKER  = {
+ASPECT2CHECKER  = {
     'morphology': MorphologyChecker(),
     'duplicates': DuplicatesChecker(),
     'genetive_chains': GenetiveChainsChecker(),

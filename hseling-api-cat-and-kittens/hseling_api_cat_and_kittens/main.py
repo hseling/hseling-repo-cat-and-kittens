@@ -9,7 +9,7 @@ from hseling_api_cat_and_kittens import boilerplate, db_queries
 
 from hseling_lib_cat_and_kittens.process import process_data, process_udpipe
 from hseling_lib_cat_and_kittens.query import query_data
-from hseling_api_cat_and_kittens.hseling_api_cat_and_kittens import checking
+from hseling_api_cat_and_kittens import checking
 
 
 app = Flask(__name__)
@@ -17,6 +17,9 @@ app.config['DEBUG'] = False
 app.config['LOG_DIR'] = '/tmp/'
 if os.environ.get('HSELING_API_CAT_AND_KITTENS_SETTINGS'):
     app.config.from_envvar('HSELING_API_CAT_AND_KITTENS_SETTINGS')
+
+app.config['HSELING_API_ENDPOINT'] = os.environ.get('HSELING_API_ENDPOINT')
+app.config['HSELING_RPC_ENDPOINT'] = os.environ.get('HSELING_RPC_ENDPOINT')
 
 app.config.update(
     CELERY_BROKER_URL=boilerplate.CELERY_BROKER_URL,
@@ -42,6 +45,11 @@ MODELS_DIR = '/dependencies/hseling-lib-cat-and-kittens/models/'
 MODEL_NAMES = {
     'russian': 'russian-syntagrus-ud-2.5-191206.udpipe'
 }
+
+def get_server_endpoint():
+    HSELING_API_ENDPOINT = app.config.get('HSELING_API_ENDPOINT')
+
+    return HSELING_API_ENDPOINT
 
 def do_process_task(file_ids_list):
     files_to_process = boilerplate.list_files(recursive=True,
@@ -76,18 +84,6 @@ def parse_file(text):
     pipeline = Pipeline(model, 'tokenizer=ranges', Pipeline.DEFAULT, Pipeline.DEFAULT, 'conllu')
     return process_udpipe(text, pipeline)
 
-@app.route('/api/udpipe')
-def udpify():
-    from ufal.udpipe import Model, Pipeline
-    model_path = MODELS_DIR + MODEL_NAMES['russian']
-    model = Model.load(model_path)
-    pipeline = Pipeline(model, 'tokenizer=ranges', Pipeline.DEFAULT, Pipeline.DEFAULT, 'conllu')
-    token = request.args.get("token")
-    if token:
-        solution = pipeline.process(token)
-    else:
-        solution = pipeline.process("Руссий текст")
-    return jsonify({'solution' : str(solution)})
 
 @app.route('/api/healthz')
 def healthz():
@@ -206,6 +202,23 @@ def lemma_search_endpoint():
     search_max = request.args.get("max")
     return jsonify({"values": db_queries.lemma_search(search_lemma1, search_lemma2, search_morph1, search_morph2, search_syntrole, search_min, search_max)})
 
+
+# @app.route('/api/udpipe', methods=['POST'])
+# def udpify():
+#     from ufal.udpipe import Model, Pipeline
+#     model_path = MODELS_DIR + MODEL_NAMES['russian']
+#     model = Model.load(model_path)
+#     pipeline = Pipeline(model, 'tokenizer=ranges', Pipeline.DEFAULT, Pipeline.DEFAULT, 'conllu')
+#     data = request.get_json()
+#     text = data['text'] if 'text' in data else ''
+#     if text != '':
+#         udpipe_output = pipeline.process(text)
+#         solution = conllu.parse(udpipe_output) 
+#     else:
+#         udpipe_output = pipeline.process('')
+#         solution = conllu.parse(udpipe_output)
+#     return jsonify({'solution' : str(solution)})
+
 @app.route("/api/check_text", methods=['POST'])
 def check_text():
     data = request.get_json()
@@ -213,9 +226,6 @@ def check_text():
     aspects = data['aspects'] if 'aspects' in data else None
     problems = checking.check_text(text, aspects)
     return jsonify({'problems': problems})
-
-
-
 
 
 @app.route("/api/")
