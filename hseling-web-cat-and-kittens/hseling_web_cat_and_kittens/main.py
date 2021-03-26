@@ -395,11 +395,12 @@ def collocations():
 def render_upload_file():
     return render_template('upload_and_spellcheck.html')
 
-@app.route('/web/upload_file', methods=['POST'])
+@app.route('/web/upload_file', methods=['POST', 'GET'])
 def upload_file():
     if 'file' not in request.files:
         return 'Файл не был отправлен', 400
     file = request.files['file']
+    print('Получили файл, тип объекта', type(file))
     file_id = save_file_first_time_and_get_id(file)
     if not is_encoding_supported(file_id):
         return 'Сохраните файл в кодировке utf-8', 400

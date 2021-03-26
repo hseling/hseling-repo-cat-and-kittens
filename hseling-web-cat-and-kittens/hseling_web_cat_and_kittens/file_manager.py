@@ -5,12 +5,18 @@ import secrets
 import charset_normalizer
 
 def get_txt_path(file_id):
-    txt_name = file_id + '.txt'
+    txt_name = str(file_id) + '.txt'
     return os.path.join(UPLOAD_FOLDER, txt_name)
 
 def save_file_first_time_and_get_id(file):
+    print(os.getcwd())
+    print(type(file))
     file_id = secrets.token_urlsafe(16)
-    file.save(get_txt_path(file_id))
+    print('file_id', file_id)
+    file_path = get_txt_path(file_id)
+    print('Сохраняем в ' + file_path)
+    file.save(file_path)
+    print('Сохранили')
     return file_id
 
 def save_next_version(text, file_id):
@@ -18,7 +24,7 @@ def save_next_version(text, file_id):
         f.write(text)
 
 def get_last_version(file_id):
-    file_name = file_id + '.txt'
+    file_name = get_txt_path(file_id)
     print(file_name)
     all_saved_student_texts = os.listdir(UPLOAD_FOLDER)
     if file_name in all_saved_student_texts:
