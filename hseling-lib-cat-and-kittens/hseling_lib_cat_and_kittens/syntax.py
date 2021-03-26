@@ -1,4 +1,4 @@
-from parsing import get_token_start, get_token_end
+from hseling_lib_cat_and_kittens.parsing import get_token_start, get_token_end
 
 MORE_LESS = ['более', 'менее']
 
