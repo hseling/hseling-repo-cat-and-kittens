@@ -1,9 +1,9 @@
-from ufal.udpipe import Model, Pipeline, ProcessingError, InputFormat
+from ufal.udpipe import Model, Pipeline
 import os
 import re
 import conllu
 
-MODELS_DIR = '/dependencies/hseling-api-cat-and-kittens/models/'
+MODELS_DIR = '/dependencies/hseling-lib-cat-and-kittens/models/'
 MODEL_NAMES = {
     'russian': 'russian-syntagrus-ud-2.5-191206.udpipe'
 }

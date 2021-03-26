@@ -2,7 +2,7 @@ from hseling_api_cat_and_kittens.morphology_check import *
 from hseling_lib_cat_and_kittens.syntax import *
 from hseling_lib_cat_and_kittens.duplicates import check_duplicates
 from abc import ABC, abstractmethod
-from parsing import make_conll_with_udpipe
+from hseling_lib_cat_and_kittens import parsing
 
 
 class AbstractAspectChecker:
@@ -80,7 +80,7 @@ def check_text(text:str, aspects=None):
         checker = ASPECT2CHECKER[aspect]
         if checker.input_type == 'connlu_tokenlists':
             if parsed_text == None:
-                parsed_text = make_conll_with_udpipe(text)
+                parsed_text = parsing.make_conll_with_udpipe(text)
             checking_results[aspect] = checker.check(parsed_text)
         elif checker.input_type == 'text':
             checking_results[aspect] = checker.check(text)
