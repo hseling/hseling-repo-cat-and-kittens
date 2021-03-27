@@ -33,17 +33,14 @@ PATH_TO_MOST_COMMON_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + MOST_COMM
 MOST_COMMON_CORPUS = json.load(open(PATH_TO_MOST_COMMON_JSON, encoding='utf-8'))
 MOST_COMMON_CORPUS = {token:set(known_parsing_results) for token, known_parsing_results in MOST_COMMON_CORPUS.items()}
 
-PATH_TO_CORRECT_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + CORRECT
+PATH_TO_CORRECT_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + CORRECT_JSON
 CORRECT = json.load(open(PATH_TO_CORRECT_JSON, encoding='utf-8'))
 CORRECT = {token:set(known_parsing_results) for token, known_parsing_results in CORRECT.items()}
 
-PATH_TO_WRONG_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + WRONG
+PATH_TO_WRONG_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + WRONG_JSON
 WRONG = json.load(open(PATH_TO_WRONG_JSON, encoding='utf-8'))
 WRONG = {token:set(known_parsing_results) for token, known_parsing_results in WRONG.items()}
 
-CORPUS_CASH = GrammarCash(cash=MOST_COMMON_CORPUS)
-CORRECT_CASH = GrammarCash(cash=CORRECT, cash_limit=CASH_LIMIT)
-WRONG_CASH = GrammarCash(cash=WRONG, cash_limit=CASH_LIMIT)
 
 def stringify_grammar(conllu_token):
     return '_'.join([conllu_token['lemma'], conllu_token['upos'], str(conllu_token['feats'])])
@@ -105,6 +102,9 @@ class GrammarCash():
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(self.cash, f)
 
+CORPUS_CASH = GrammarCash(cash=MOST_COMMON_CORPUS)
+CORRECT_CASH = GrammarCash(cash=CORRECT, cash_limit=CASH_LIMIT)
+WRONG_CASH = GrammarCash(cash=WRONG, cash_limit=CASH_LIMIT)
 
 def is_morphology_correct(words, corpus_cash=CORPUS_CASH, correct_cash=CORRECT_CASH, wrong_cash=WRONG_CASH):
     mistakes_list = list()
