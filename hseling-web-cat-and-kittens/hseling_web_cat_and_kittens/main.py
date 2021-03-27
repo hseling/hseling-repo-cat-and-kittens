@@ -7,7 +7,7 @@ from flask_mysqldb import MySQL
 import json
 from flask import *
 from hseling_web_cat_and_kittens.file_manager import *
-import hseling_web_cat_and_kittens.spelling
+from hseling_web_cat_and_kittens import spelling
 import hseling_web_cat_and_kittens.constants
 # import secrets
 # from readability import countFKG, uniqueWords
@@ -391,23 +391,34 @@ def collocations():
                 return render_template('db_response.html', response=json.dumps(result), token=search_token, type="collocations")
         else: "Error 400"
 
+@app.route('/web/upload_file', methods=['GET', 'POST'])
+def upload_file():
+    contents = ''
+    if request.method == 'POST':
+        contents = request.values.get('input_text')
+        requests.post(get_server_endpoint() + 'upload_file', data={"input_text" : contents})
+    return render_template('upload_and_spellcheck.html', text=contents)
+
 @app.route('/web/render_upload_file', methods=['GET'])
 def render_upload_file():
-    return render_template('upload_and_spellcheck.html')
+    return render('text')
+    # return render_template('upload_and_spellcheck.html')
 
-@app.route('/web/upload_file', methods=['POST', 'GET'])
-def upload_file():
-    if 'file' not in request.files:
-        return 'Файл не был отправлен', 400
-    file = request.files['file']
-    print('Получили файл, тип объекта', type(file))
-    file_id = save_file_first_time_and_get_id(file)
-    if not is_encoding_supported(file_id):
-        return 'Сохраните файл в кодировке utf-8', 400
-    elif not are_paragraphs_correct(file_id):
-        return 'Разделите длинные абзацы на несколько', 400
-    else:
-        return jsonify({'file_id': file_id})
+    
+
+# @app.route('/web/upload_file', methods=['POST', 'GET'])
+# def upload_file():
+#     if 'file' not in request.files:
+#         return 'Файл не был отправлен', 400
+#     file_ = request.files['file']
+#     print('Получили файл, тип объекта', type(file_))
+#     file_id = save_file_first_time_and_get_id(file_)
+#     # if not is_encoding_supported(file_id):
+#     #     return 'Сохраните файл в кодировке utf-8', 400
+#     # elif not are_paragraphs_correct(file_id):
+#     #     return 'Разделите длинные абзацы на несколько', 400
+#     # else:
+#     return jsonify({'file_id': file_id})
 
 @app.route('/web/get_spelling_problems/<file_id>', methods=['GET'])
 def get_spelling_data(file_id):
@@ -433,6 +444,7 @@ def possible_aspects():
 @app.route('/web/get_statistics/<file_id>', methods=['GET'])
 def get_statistics(file_id):
     text = get_last_version(file_id)
+    text = "Это какой-то текст без ошибок."
     readability_score = countFKG(text)
     total, unique = uniqueWords(text)
     return jsonify({'readability_score': readability_score,

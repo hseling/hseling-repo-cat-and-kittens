@@ -1,4 +1,4 @@
-UPLOAD_FOLDER = 'student_texts'
+UPLOAD_FOLDER = 'upload/'
 ALLOWED_EXTENSIONS = {'txt'}
 ASPECTS =  [{'id': 'morphology','russian': 'Словоформы, не представленные в CAT'},
            {'id': 'duplicates','russian': 'Повторы'},

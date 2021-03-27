@@ -12,7 +12,7 @@ def make_conll_with_udpipe(text):
     model_path = MODELS_DIR + MODEL_NAMES['russian']
     model = Model.load(model_path)
     pipeline = Pipeline(model, 'tokenizer=ranges', Pipeline.DEFAULT, Pipeline.DEFAULT, 'conllu')
-    udpipe_output =  pipeline.process(text)
+    udpipe_output = pipeline.process(text)
     return conllu.parse(udpipe_output)
 
 def get_token_start(token: conllu.models.Token):

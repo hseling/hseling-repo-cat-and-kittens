@@ -104,6 +104,16 @@ def upload_endpoint():
             return jsonify(boilerplate.save_file(upload_file))
     return boilerplate.get_upload_form()
 
+@app.route('/api/upload_file', methods=['GET', 'POST'])
+def upload_file():
+    contents = ''
+    if request.method == 'POST':
+        contents = request.values.get('input_text', '')
+        if contents:
+            with open('/data/upload/upload.txt', 'w') as f:
+                f.write(contents)
+    return jsonify({"status" : "ok"})
+
 @app.route('/api/files/<path:file_id>')
 def get_file_endpoint(file_id):
     if file_id in boilerplate.list_files(recursive=True):

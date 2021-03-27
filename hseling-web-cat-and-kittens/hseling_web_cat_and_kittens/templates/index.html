@@ -3,8 +3,8 @@
 
 {% block links %}
 <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
-<link href="{{ url_for('static', filename='../css/bootstrap.css') }}" rel="stylesheet">
-<link href="{{ url_for('static', filename='../css/cover.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/cover.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -13,7 +13,7 @@
   <main role="main" class="container">
     <h1 class="cover-heading">Корпус CAT&ampKittens</h1>
     <h3>К какому ресурсу вы хотите обратиться?</h4>
-      <a class="links check" href="{{ url_for('render_upload_file') }}">Проверка текста на академичность ></a><br>
+      <a class="links check" href="{{ url_for('upload_file') }}">Проверка текста на академичность ></a><br>
       <a class="links collocations" href="{{ url_for('collocations') }}">Поиск устойчивых словосочетаний ></a><br>
       <a class="links search" href="{{ url_for('search') }}">Поиск по корпусу ></a><br>
   </main>

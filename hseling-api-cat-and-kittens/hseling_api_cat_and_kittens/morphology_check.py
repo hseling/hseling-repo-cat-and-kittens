@@ -5,6 +5,7 @@ import re
 import time
 from random import randint, uniform
 from conllu import parse, parse_tree
+import json
 
 from hseling_api_cat_and_kittens import boilerplate
 
@@ -21,6 +22,31 @@ LATINS = re.compile(r"([a-zA-Z]+\W+)|(\W+[a-zA-Z]+)|(\W+[a-zA-Z]\W+)|([a-zA-Z]+)
 CYRILLIC = re.compile(r"([а-яА-ЯёЁ]+\W+)|(\W+[а-яА-ЯёЁ]+)|(\W+[а-яА-ЯёЁ]\W+)")
 
 CONN = boilerplate.get_mysql_connection()
+
+CASHING_PREFIX = 'cashing/'
+MOST_COMMON_JSON = 'morphology_checking_most_common.json'
+CORRECT_JSON = 'correct.json'
+WRONG_JSON = 'wrong.json'
+CASH_LIMIT = 5000
+
+PATH_TO_MOST_COMMON_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + MOST_COMMON_JSON
+MOST_COMMON_CORPUS = json.load(open(PATH_TO_MOST_COMMON_JSON, encoding='utf-8'))
+MOST_COMMON_CORPUS = {token:set(known_parsing_results) for token, known_parsing_results in MOST_COMMON_CORPUS.items()}
+
+PATH_TO_CORRECT_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + CORRECT
+CORRECT = json.load(open(PATH_TO_CORRECT_JSON, encoding='utf-8'))
+CORRECT = {token:set(known_parsing_results) for token, known_parsing_results in CORRECT.items()}
+
+PATH_TO_WRONG_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + CORRECT
+WRONG = json.load(open(PATH_TO_CORRECT_JSON, encoding='utf-8'))
+WRONG = {token:set(known_parsing_results) for token, known_parsing_results in WRONG.items()}
+
+CORPUS_CASH = GrammarCash(cash=MOST_COMMON_CORPUS)
+CORRECT_CASH = GrammarCash(cashcash_limit=CASH_LIMIT)
+WRONG_CASH = GrammarCash(cash_limit=CASH_LIMIT)
+
+def stringify_grammar(conllu_token):
+    return '_'.join([conllu_token['lemma'], conllu_token['upos'], str(conllu_token['feats'])])
 
 class Tagset:
     def __init__(self, unigram, lemm, morph, pos, start_id, end_id):
@@ -49,6 +75,81 @@ class Tagset:
         return dict([('unigram', self.unigram), ('lemm', self.lemm), ('morph', self.morph), \
             ('pos', self.pos), ('start_id', self.start_id), ('end_id', self.end_id)])
 
+def stringify_morph(morph):
+    if morph:
+        subtaglist = list()
+        for tag_element in list(morph.items()):
+            subtag = '{}={}|'.format(tag_element[0], tag_element[1])
+            subtaglist.append(subtag)
+
+        fulltag = ''.join([str(x) for x in subtaglist])
+        morph_string = fulltag[:-1]
+        return morph_string
+    return 'None'
+
+class GrammarCash():
+    def __init__(self, cash=None, cash_limit=5000):
+        if cash:
+            self.cash=cash
+        else:
+            self.cash = collections.defaultdict(set)
+        self.cash_limit = max(cash_limit, len(self.cash))
+        
+    def __contains__(self, token):
+        form = token['form'] 
+        return form in self.cash and self.stringify_grammar(token) in self.cash[form]
+    
+    def add(self, token):
+        stringified_grammar_tags = self.stringify_grammar(token)
+        self.cash[token['form']].add(stringified_grammar_tags)
+        if len(self.cash) > self.cash_limit:
+            self.clean_cash()
+            
+    def strict_check(self, token):
+        form = token['form'] 
+        if form in self.cash:
+            if self.stringify_grammar(token) in self.cash[form]:
+                return True
+            else:
+                return False
+        else:
+            return None
+
+    def strict_check(self, token):
+        form = token['form'] 
+        if form in self.cash and self.stringify_grammar(token) in self.cash[form]:
+            return True
+        else:
+            return False
+
+    def clean_cash(self):
+        self.cash = collections.defaultdict(set)
+        
+    def stringify_grammar(self, conllu_token):
+        return '_'.join([conllu_token['lemma'], conllu_token['upos'], str(conllu_token['feats'])])
+    
+    def save_cash(self, path):
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(self.cash, f)
+
+
+def is_morphology_correct(words, corpus_cash=CORPUS_CASH, correct_cash=CORRECT_CASH, wrong_cash=WRONG_CASH):
+    mistakes_list = list()
+    for token in words:
+        if corpus_cash.strict_check(token) or correct_cash.strict_check(token):
+            continue
+        elif wrong_cash.strict_check(token):
+            mistake_list.append(token)
+        else:
+            database_query_result = morph_error_catcher(token)
+            if database_query_result:
+                correct_cash.add(token)
+            else:
+                mistake_list.append(token)
+                wrong_cash.add(token)
+    correct_cash.save_cash()
+    wrong_cash.save_cash()
+    return mistakes_list
 
 def parser(conllu):
     """
@@ -61,7 +162,7 @@ def parser(conllu):
         yield token
 
 
-def get_words(conllu):
+def get_words(conllu_sents):
     """
     tree - generator of sentences (TokenLists) from conllu tree
     txtfile - txt version of the conllu file
@@ -70,67 +171,37 @@ def get_words(conllu):
     size, int is a number of all words in the domain
     """
 
-    words = []
-
-    conllu_sents = parse(conllu)
+    words = list()
 
     for sentence in conllu_sents:
         for token in sentence:
-            token_range = token['misc']['TokenRange']
-            start, end = token_range.split(':')
-            token['start_id'], token['end_id'] = int(start), int(end)
-
-            if token['form'] != '_' and token['upostag'] != '_' and token['upostag']!='NONLEX' and token['form'] not in r'[]\/':
-                for unigram in token['form'].split(): # .lower()
-                    words.append((unigram, token['lemma'], token['feats'], token['upostag'],
-                    token['start_id'], token['end_id']))
+            if token['form'] != '_' and token['upos'] != '_' and token['upos'] != 'NONLEX' and token['form'] not in r'[]\/':
+                for unigram in token['form'].split():
+                    words.append(token)
 
     size = len(words)
     return words, size
 
-def tagset_lemma(words):
-    """
-    Expands OrderedDict object to string
-    words: list of tuples (unigram, lemm, morph, pos, start_id, end_id)
-    """
-    print('tagset being created...')
-    word_list = list()
-    for word in words:
-        tagset = Tagset(*word)
-        tagset.morph = tagset.morph_to_string()
-        tagset = tagset.to_dict()
-        word_list.append(tagset)
-    return word_list
-
-
-def morph_error_catcher(words, con=CONN, stop=STOPS, num=NUMBERS, lat=LATINS, cyr=CYRILLIC):
-    mistakes = {}
-    corrects = {}
+def morph_error_catcher(token, con=CONN, stop=STOPS, num=NUMBERS, lat=LATINS, cyr=CYRILLIC):
     cur = con.cursor(dictionary=True, buffered=True)
-    for i, word in enumerate(words):
-        if word['unigram'].lower() not in punctuation and word['unigram'].lower() not in stop and \
-        not num.match(word['unigram'].lower()) and not lat.search(word['unigram'].lower()) and \
-        not cyr.search(word['unigram'].lower()) and word['pos'] != 'PROPN':
+    if token['form'].lower() not in punctuation and token['form'].lower() not in stop and \
+    not num.match(token['form'].lower()) and not lat.search(token['form'].lower()) and \
+    not cyr.search(token['form'].lower()) and token['pos'] != 'PROPN':
+        morph = stringify_morph(token['feats'])
+        cur.execute("""SELECT unigram, lemm, morph, pos FROM
+                    (SELECT unigram, morph, lemma FROM unigrams) AS a JOIN
+                    (SELECT id_lemmas, id_pos, lemma AS lemm FROM lemmas) AS b ON lemma = id_lemmas JOIN pos ON b.id_pos = pos.id_pos
+                    WHERE unigram="{}" &&
+                    lemm="{}" &&
+                    morph="{}" &&
+                    pos="{}";""".format(token['form'], token['lemm'], morph, token['upos']))
 
-            time.sleep(uniform(0.2, 0.6))
-
-            cur.execute("""SELECT unigram, lemm, morph, pos FROM
-                        (SELECT unigram, morph, lemma FROM unigrams) AS a JOIN
-                        (SELECT id_lemmas, id_pos, lemma AS lemm FROM lemmas) AS b ON lemma = id_lemmas JOIN pos ON b.id_pos = pos.id_pos
-                        WHERE unigram="{}" &&
-                        lemm="{}" &&
-                        morph="{}" &&
-                        pos="{}";""".format(word['unigram'], word['lemm'], word['morph'], word['pos']))
-
-            rows = cur.fetchall()
-            if not rows:
-                mistakes[i] = word
-            else:
-                corrects[i] = word
-    return mistakes, corrects
+        rows = cur.fetchall()
+        return rows
+    return False
 
 
-def correction(conllu, con=CONN):
+def correction(conllu_sents, con=CONN):
     '''
     conllu: path to conllu format file or conllu data
     text: variable open in 'r' mode
@@ -138,13 +209,15 @@ def correction(conllu, con=CONN):
     print_correction = flag in to get a txt file with correction in the destination directory
     '''
 
-    # tagset creation
-    words, _ = get_words(conllu)
-    tagset = tagset_lemma(words)
-    mistakes, _ = morph_error_catcher(tagset, con)
-    mistakes_list = mistakes.values()
+    words, _ = get_words(conllu_sents)
+    mistakes_list = is_morphology_correct(words)
+    mistake_ids = list()
+    for mistake in mistake_list:
+        token_range = mistake['misc']['TokenRange']
+        start, end = token_range.split(':')
+        mistake_ids.append({ 'bos': int(start), 'end': int(end) })
 
-    return list(mistakes_list)
+    return mistake_ids
 
 
 def main():

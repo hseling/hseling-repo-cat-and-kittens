@@ -3,7 +3,8 @@ var setupTextEditing = function() {
     $.get(`/get_statistics/${urlParams.get('file_id')}`, function(data) {
         const readability = data.readability_score;
         $("#FKG").text(readability);
-
+        console.log("READABILITY");
+        console.log(readability);
         const file_id = urlParams.get('file_id');
         $("#filename").text(file_id);
         
@@ -46,4 +47,4 @@ var setupTextEditing = function() {
 
 }
 
-setTimeout(setupTextEditing, 0);
+// setTimeout(setupTextEditing, 0);

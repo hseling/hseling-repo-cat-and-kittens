@@ -123,4 +123,4 @@ var setupTextEditing = function() {
 
 }
 
-setTimeout(setupTextEditing, 0);
+// setTimeout(setupTextEditing, 10);
