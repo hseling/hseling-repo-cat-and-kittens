@@ -48,33 +48,6 @@ WRONG_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 def stringify_grammar(conllu_token):
     return '_'.join([conllu_token['lemma'], conllu_token['upos'], str(conllu_token['feats'])])
 
-class Tagset:
-    def __init__(self, unigram, lemm, morph, pos, start_id, end_id):
-        self.unigram = unigram
-        self.lemm = lemm
-        self.morph = morph
-        self.pos = pos
-        self.start_id = start_id
-        self.end_id = end_id
-
-    def morph_to_string(self):
-        if self.morph:
-            subtaglist = list()
-            for tag_element in list(self.morph.items()):
-                subtag = '{}={}|'.format(tag_element[0], tag_element[1])
-                subtaglist.append(subtag)
-
-            fulltag = ''.join([str(x) for x in subtaglist])
-            morph_string = fulltag[:-1]
-            return morph_string
-        else:
-            morph_string = 'None'
-            return morph_string
-    
-    def to_dict(self):
-        return dict([('unigram', self.unigram), ('lemm', self.lemm), ('morph', self.morph), \
-            ('pos', self.pos), ('start_id', self.start_id), ('end_id', self.end_id)])
-
 def stringify_morph(morph):
     if morph:
         subtaglist = list()
@@ -105,15 +78,15 @@ class GrammarCash():
         if len(self.cash) > self.cash_limit:
             self.clean_cash()
             
-    def strict_check(self, token):
-        form = token['form'] 
-        if form in self.cash:
-            if self.stringify_grammar(token) in self.cash[form]:
-                return True
-            else:
-                return False
-        else:
-            return None
+    # def strict_check(self, token):
+    #     form = token['form'] 
+    #     if form in self.cash:
+    #         if self.stringify_grammar(token) in self.cash[form]:
+    #             return True
+    #         else:
+    #             return False
+    #     else:
+    #         return None
 
     def strict_check(self, token):
         form = token['form'] 
@@ -150,17 +123,6 @@ def is_morphology_correct(words, corpus_cash=CORPUS_CASH, correct_cash=CORRECT_C
     correct_cash.save_cash()
     wrong_cash.save_cash()
     return mistakes_list
-
-def parser(conllu):
-    """
-    Yields a sentence from conllu tree with its tags
-
-    """
-    tree = parse(conllu)
-
-    for token in tree:
-        yield token
-
 
 def get_words(conllu_sents):
     """
