@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block links %}
+<link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
+<link href="../static/css/bootstrap.css" rel="stylesheet">
+<link href="../static/css/cover.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<main role="main" class="container" style="padding: 60px 15px 0">
+<div class="text-center cover-container d-flex h-100 p-3 mx-auto flex-column">
+  <main role="main" class="container">
+    <h1 class="cover-heading">Корпус CAT&Kittens</h1>
+    <h3>К какому ресурсу вы хотите обратиться?</h4>
+      <a class="links check" href="{{ url_for('render_upload_file') }}">Проверка текста на академичность ></a><br>
+      <a class="links collocations" href="{{ url_for('collocations') }}">Поиск устойчивых словосочетаний ></a><br>
+      <a class="links search" href="{{ url_for('search') }}">Поиск по корпусу ></a><br>
+  </main>
+
+  <footer class="mastfoot mt-auto custom-footer">
+    <span class="text-muted">
+      <img class="cat-image" src="../static/img/cat9.jpg" />
+      <img class="cat-image" src="../static/img/cat2.jpg" />
+      <img class="cat-image" src="../static/img/cat6.jpg" />
+    </span>
+  </footer>
+</div>
+{% endblock %}

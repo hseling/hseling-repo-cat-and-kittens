@@ -1,0 +1,18 @@
+.aspect1 { 
+    border-bottom:1px solid red;
+    display:inline-block; 
+    padding-bottom:1px; 
+    }
+
+.aspect2 { 
+    border-bottom:1px solid blue;
+    display:inline-block; 
+    padding-bottom:1px; 
+    }
+
+.edited_text_field{
+   width: 98%;
+   padding:1%;
+}
+
+

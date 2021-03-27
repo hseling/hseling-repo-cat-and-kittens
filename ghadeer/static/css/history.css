@@ -1,0 +1,12 @@
+.draggable{
+    background-color: #333;
+    color: #ffffff;
+    cursor: move;
+}
+.draggable a{
+    color: #ffffff;
+    text-decoration: none;
+}
+.draggable.dragging{
+    opacity: 0.5;
+}

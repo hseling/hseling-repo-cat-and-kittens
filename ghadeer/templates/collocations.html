@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Поиск по устойчивым сочетаниям{% endblock %}
+
+{% block links %}
+<link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
+<link href="../static/css/sticky-footer-navbar.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="../static/css/search.css">
+<script type="text/javascript" src="../static/dropdown_checkboxes.js"></script>
+<link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
+<link href="../static/css/bootstrap.css" rel="stylesheet">
+<link href="../static/css/cover.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<main role="main" class="container">
+  <h1 class="mt-5">Поиск по устойчивым сочетаниям</h1>
+  <div>
+    <div class="collocations-cat">
+      <div class="collocations-description">
+        <p>Списки устойчивых сочетаний включают в себя словосочетания длиной от двух до шести токенов, извлечённые из
+          текстов Корпуса. Для каждого сочетания посчитаны следующие метрики для определения степени его устойчивости в
+          академической речи:</p>
+      </div>
+      <ul>
+        <li><a href="https://en.wikipedia.org/wiki/Pointwise_mutual_information">PMI</a></li>
+        <li><a href="https://en.wikipedia.org/wiki/Student%27s_t-test">t score</a></li>
+        <li><a href="https://en.wikipedia.org/wiki/Likelihood-ratio_test">Likelihood ratio</a></li>
+        <li>Абсолютная частота</li>
+        <li>Относительная частота</li>
+      </ul>
+    </div>
+    <form class="my-2 my-lg-0" action="collocations" method="post">
+      <div class="form-row">
+        <div class="form-inline search-field">
+          <input type="hidden" name="csrfmiddlewaretoken"
+            value="PVwilsONLGlzBqCdIDudSVtVUaUFEZzDiGjtSiWe4JqGW20cTHqwHAr9n0pPx1dl">
+          <input class="form-control mr-sm-2" type="search" placeholder="Введите слово" aria-label="Search"
+            name="search_collocations" style="margin-left: 10px;margin-right: 0 !important;">
+
+          <div class="domain">
+            <select class="form-control" name="search-domain">
+              <option>Лингвистика</option>
+              <option>Социология</option>
+              <option>История</option>
+              <option>Юриспруденция</option>
+              <option>Психология и педагогика</option>
+              <option>Экономика</option>
+              <option>Весь корпус</option>
+            </select>
+          </div>
+
+          <div class="domain">
+            <select class="form-control" name="search-metric">
+              <option>PMI</option>
+              <option>t_score</option>
+              <option>logdice</option>
+              <option>corpus_frequency</option>
+            </select>
+          </div>
+
+          <button class="btn btn-success" type="submit" style="margin-left: 10px; margin-right: 10px;">Искать</button>
+          <br>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="col form-control-md" style="margin-left: 15px;">
+          <div class="form-check form-check-inline">
+            <!-- <input class="form-check-input" type="radio" name="inlineRadioOptions" id="lemmas" value="lemmas"
+              checked="">
+            <label class="form-check-label" for="inlineRadio1">Леммы</label> -->
+          </div>
+          <div class="form-check form-check-inline">
+            <!-- <input class="form-check-input" type="radio" name="inlineRadioOptions" id="lemmas" value="wordforms">
+            <label class="form-check-label" for="inlineRadio2">Словоформы</label> -->
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container custom-footer">
+    <span class="text-muted">
+      <img class="cat-image" src="../static/img/cat4.jpg" />
+    </span>
+  </div>
+</footer>
+
+{% endblock %}
