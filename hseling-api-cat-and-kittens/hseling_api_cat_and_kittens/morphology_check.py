@@ -180,11 +180,3 @@ def correction(conllu_sents, con=CONN):
         mistake_ids.append({ 'bos': int(start), 'end': int(end) })
 
     return mistake_ids
-
-
-def main():
-    
-    print('none')
-
-if __name__ == "__main__":
-    main()
