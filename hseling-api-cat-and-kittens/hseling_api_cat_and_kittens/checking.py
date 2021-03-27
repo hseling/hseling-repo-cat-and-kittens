@@ -63,7 +63,7 @@ class DuplicatesChecker(AbstractAspectChecker):
 
 
 ASPECT2CHECKER  = {
-    #'morphology': MorphologyChecker(),
+    'morphology': MorphologyChecker(),
     'duplicates': DuplicatesChecker(),
     'genetive_chains': GenetiveChainsChecker(),
     'comparatives':ComparativeChecker(),
