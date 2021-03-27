@@ -37,13 +37,13 @@ PATH_TO_CORRECT_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + CORRECT
 CORRECT = json.load(open(PATH_TO_CORRECT_JSON, encoding='utf-8'))
 CORRECT = {token:set(known_parsing_results) for token, known_parsing_results in CORRECT.items()}
 
-PATH_TO_WRONG_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + CORRECT
-WRONG = json.load(open(PATH_TO_CORRECT_JSON, encoding='utf-8'))
+PATH_TO_WRONG_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + WRONG
+WRONG = json.load(open(PATH_TO_WRONG_JSON, encoding='utf-8'))
 WRONG = {token:set(known_parsing_results) for token, known_parsing_results in WRONG.items()}
 
 CORPUS_CASH = GrammarCash(cash=MOST_COMMON_CORPUS)
-CORRECT_CASH = GrammarCash(cashcash_limit=CASH_LIMIT)
-WRONG_CASH = GrammarCash(cash_limit=CASH_LIMIT)
+CORRECT_CASH = GrammarCash(cash=CORRECT, cash_limit=CASH_LIMIT)
+WRONG_CASH = GrammarCash(cash=WRONG, cash_limit=CASH_LIMIT)
 
 def stringify_grammar(conllu_token):
     return '_'.join([conllu_token['lemma'], conllu_token['upos'], str(conllu_token['feats'])])
