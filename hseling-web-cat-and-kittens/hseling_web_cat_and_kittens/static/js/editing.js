@@ -22,7 +22,7 @@ var setupTextEditing = function() {
   // });
 
 
-  $.get(`/send_last_version/${urlParams.get('file_id')}`, function(data) {
+  $.get(`/web/send_last_version/${urlParams.get('file_id')}`, function(data) {
     const text = data.text;
     console.log('get_text', data);
     $(".source_text").html(text);
@@ -31,7 +31,7 @@ var setupTextEditing = function() {
 
 
 
-  $.get(`/possible_aspects`, function(data) {
+  $.get(`/web/possible_aspects`, function(data) {
     console.log(data);
     let checkingOptionsDiv = document.getElementById("checking_options");
     possibleAspects = data.possible_aspects;
@@ -77,7 +77,7 @@ var setupTextEditing = function() {
       $.ajax({
           type: "POST",
           //НАПИСАТЬ РУТ ДЛЯ СОХРАНЕНИЯ
-          url: "/save_edited_text",
+          url: "/web/save_edited_text",
           dataType: "json",
           contentType: "application/json; charset=utf-8",
           data: JSON.stringify({
@@ -95,7 +95,7 @@ var setupTextEditing = function() {
             console.log('chosenNextCheckAspects', chosenNextCheckAspects)
             $.ajax({
               type: "POST",
-              url: "/aspects_checking",
+              url: "/web/aspects_checking",
               dataType: "json",
               contentType: "application/json; charset=utf-8",
               data: JSON.stringify({
@@ -116,11 +116,10 @@ var setupTextEditing = function() {
               }
               //window.location.replace(encodeURI(`/editing_form?text_id=${file_id}_spelling`));
             });
-            //добавить случай неуспеха                   
+            //добавить случай неуспеха
           }
       });
   });
 
 }
-
-// setTimeout(setupTextEditing, 10);
+setTimeout(setupTextEditing, 0);

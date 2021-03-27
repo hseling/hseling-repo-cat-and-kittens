@@ -7,8 +7,8 @@ from flask_mysqldb import MySQL
 import json
 from flask import *
 from hseling_web_cat_and_kittens.file_manager import *
-from hseling_web_cat_and_kittens import spelling
-import hseling_web_cat_and_kittens.constants
+import hseling_web_cat_and_kittens.spelling
+import hseling_web_cat_and_kittens.constants as constants
 # import secrets
 # from readability import countFKG, uniqueWords
 
@@ -404,7 +404,7 @@ def render_upload_file():
     return render('text')
     # return render_template('upload_and_spellcheck.html')
 
-    
+
 
 # @app.route('/web/upload_file', methods=['POST', 'GET'])
 # def upload_file():
@@ -423,7 +423,7 @@ def render_upload_file():
 @app.route('/web/get_spelling_problems/<file_id>', methods=['GET'])
 def get_spelling_data(file_id):
     text = get_last_version(file_id)
-    spellchecker = spelling.SpellChecker()
+    spellchecker = hseling_web_cat_and_kittens.spelling.SpellChecker()
     problems = spellchecker.check_spelling(text)['problems']
     return jsonify({'spelling_problems': problems})
 
@@ -432,7 +432,7 @@ def correct_spelling():
     file_id = request.json['file_id']
     text = get_last_version(file_id)
     user_corrections = request.json['problems_with_corrections']
-    corrected_text = spelling.make_changes(text, user_corrections)
+    corrected_text = hseling_web_cat_and_kittens.spelling.make_changes(text, user_corrections)
     save_next_version(corrected_text, file_id)
     return jsonify({'success':True})
 
@@ -453,7 +453,8 @@ def get_statistics(file_id):
 
 @app.route('/web/send_last_version/<file_id>', methods=['GET'])
 def send_last_version(file_id):
-    text = get_last_version(file_id)
+    #text = get_last_version(file_id)
+    text = 'Более красивее чем кошки только собаки. Дествительно. Более красивее чем кошки только собаки. Я так считаю. Мы так считаем'
     return jsonify({'text': text})
 
 @app.route('/web/save_edited_text', methods=['POST'])
@@ -461,26 +462,30 @@ def save_edited_text():
     data = request.get_json()
     text = data['text']
     file_id = data['file_id']
-    save_next_version(text, file_id)
+    #save_next_version(text, file_id)
     return jsonify({'success':True})
 
 @app.route('/web/aspects_checking', methods=['POST'])
 def aspects_checking():
     data = request.get_json()
     file_id = data['file_id']
-    text = get_last_version(file_id)
+    #text = get_last_version(file_id)
+    text = 'Более красивее чем кошки только собаки. Дествительно. Более красивее чем кошки только собаки. Я так считаю. Мы так считаем'
     aspects = data['chosen_aspects']
-    if not hasattr(aspects, '__iter__') or any([aspect not in constants.possible_aspects for aspect in aspects]):
-        aspects = constants.possible_aspects
-    checker_respond = request.post(get_server_endpoint() + "/check_text", data={'text': text, 'aspects':aspects})
-    if checker_respond.status_code == 200 and 'problems' in checker_respond.json:
-        problems = checker_respond.json['problems']
+    #ToDo create route in api and make a query instead of storing api data in web part as we do now
+   # if not aspects or not hasattr(aspects, '__iter__') or any([aspect not in constants.ASPECTS for aspect in aspects]):
+   #     aspects = constants.ASPECTS
+    checker_respond = requests.post(get_server_endpoint() + "/check_text", data={'text': text, 'aspects':aspects})
+    if checker_respond.status_code == 200 and 'problems' in checker_respond.json():
+        problems = checker_respond.json()['problems']
     else:
+        print('Что-то пошло не так')
         problems = {aspect:[] for aspect in aspects}
     return jsonify({'problems':problems, 'text': text})
 
 @app.route('/web/analysis')
 def analysis():
+    dummy = 'dummy2'
     return render_template('analysis.html', title='Analysis')
 
 @app.route('/web/main')

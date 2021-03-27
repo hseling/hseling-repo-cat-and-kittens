@@ -19,7 +19,7 @@ def get_token_start(token: conllu.models.Token):
     return int(token['misc']['TokenRange'].split(':')[0])
 
 def get_token_end(token: conllu.models.Token):
-    return int(tokem['misc']['TokenRange'].split(':')[1])
+    return int(token['misc']['TokenRange'].split(':')[1])
 
 def main():
     print('none')

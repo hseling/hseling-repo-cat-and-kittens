@@ -223,7 +223,7 @@ def lemma_search_endpoint():
 #     text = data['text'] if 'text' in data else ''
 #     if text != '':
 #         udpipe_output = pipeline.process(text)
-#         solution = conllu.parse(udpipe_output) 
+#         solution = conllu.parse(udpipe_output)
 #     else:
 #         udpipe_output = pipeline.process('')
 #         solution = conllu.parse(udpipe_output)
@@ -231,9 +231,12 @@ def lemma_search_endpoint():
 
 @app.route("/api/check_text", methods=['POST'])
 def check_text():
-    data = request.get_json()
-    text = data['text'] if 'text' in data else ''
-    aspects = data['aspects'] if 'aspects' in data else None
+    #data = request.get_json(force=True)
+    text = request.values.get('text', '')
+    aspects = request.values.get('aspects', [])
+    print('В апи получили данные', text, aspects)
+    #text = data['text'] if 'text' in data else ''
+    #aspects = data['aspects'] if 'aspects' in data else None
     problems = checking.check_text(text, aspects)
     return jsonify({'problems': problems})
 
