@@ -34,12 +34,12 @@ MOST_COMMON_CORPUS = json.load(open(PATH_TO_MOST_COMMON_JSON, encoding='utf-8'))
 MOST_COMMON_CORPUS = {token:set(known_parsing_results) for token, known_parsing_results in MOST_COMMON_CORPUS.items()}
 
 PATH_TO_CORRECT_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + CORRECT_JSON
-CORRECT = json.load(open(PATH_TO_CORRECT_JSON, encoding='utf-8'))
-CORRECT = {token:set(known_parsing_results) for token, known_parsing_results in CORRECT.items()}
+CORRECT_ = json.load(open(PATH_TO_CORRECT_JSON, encoding='utf-8'))
+CORRECT = {token:set(known_parsing_results) for token, known_parsing_results in CORRECT_.items()}
 
 PATH_TO_WRONG_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + WRONG_JSON
-WRONG = json.load(open(PATH_TO_WRONG_JSON, encoding='utf-8'))
-WRONG = {token:set(known_parsing_results) for token, known_parsing_results in WRONG.items()}
+WRONG_ = json.load(open(PATH_TO_WRONG_JSON, encoding='utf-8'))
+WRONG = {token:set(known_parsing_results) for token, known_parsing_results in WRONG_.items()}
 
 
 def stringify_grammar(conllu_token):
@@ -71,7 +71,10 @@ class GrammarCash():
     
     def add(self, token):
         stringified_grammar_tags = self.stringify_grammar(token)
-        self.cash[token['form']].add(stringified_grammar_tags)
+        if token['form'] not in self.cash:
+            self.cash[token['form']] = list()
+            self.cash[token['form']].append(stringified_grammar_tags)
+        self.cash[token['form']].append(stringified_grammar_tags)
         if len(self.cash) > self.cash_limit:
             self.clean_cash()
             
@@ -99,8 +102,10 @@ class GrammarCash():
         return '_'.join([conllu_token['lemma'], conllu_token['upos'], str(conllu_token['feats'])])
     
     def save_cash(self, path):
+        token2known_parses = {token:list(self.cash[token]) for token in self.cash}
         with open(path, 'w', encoding='utf-8') as f:
-            json.dump(self.cash, f)
+            json.dump(token2known_parses, f)
+
 
 CORPUS_CASH = GrammarCash(cash=MOST_COMMON_CORPUS)
 CORRECT_CASH = GrammarCash(cash=CORRECT, cash_limit=CASH_LIMIT)
@@ -112,16 +117,16 @@ def is_morphology_correct(words, corpus_cash=CORPUS_CASH, correct_cash=CORRECT_C
         if corpus_cash.strict_check(token) or correct_cash.strict_check(token):
             continue
         elif wrong_cash.strict_check(token):
-            mistake_list.append(token)
+            mistakes_list.append(token)
         else:
             database_query_result = morph_error_catcher(token)
             if database_query_result:
                 correct_cash.add(token)
             else:
-                mistake_list.append(token)
+                mistakes_list.append(token)
                 wrong_cash.add(token)
-    correct_cash.save_cash()
-    wrong_cash.save_cash()
+    correct_cash.save_cash(path=PATH_TO_CORRECT_JSON)
+    wrong_cash.save_cash(path=PATH_TO_WRONG_JSON)
     return mistakes_list
 
 def get_words(conllu_sents):
@@ -148,7 +153,7 @@ def morph_error_catcher(token, con=CONN, stop=STOPS, num=NUMBERS, lat=LATINS, cy
     cur = con.cursor(dictionary=True, buffered=True)
     if token['form'].lower() not in punctuation and token['form'].lower() not in stop and \
     not num.match(token['form'].lower()) and not lat.search(token['form'].lower()) and \
-    not cyr.search(token['form'].lower()) and token['pos'] != 'PROPN':
+    not cyr.search(token['form'].lower()) and token['upos'] != 'PROPN':
         morph = stringify_morph(token['feats'])
         cur.execute("""SELECT unigram, lemm, morph, pos FROM
                     (SELECT unigram, morph, lemma FROM unigrams) AS a JOIN
@@ -156,7 +161,7 @@ def morph_error_catcher(token, con=CONN, stop=STOPS, num=NUMBERS, lat=LATINS, cy
                     WHERE unigram="{}" &&
                     lemm="{}" &&
                     morph="{}" &&
-                    pos="{}";""".format(token['form'], token['lemm'], morph, token['upos']))
+                    pos="{}";""".format(token['form'], token['lemma'], morph, token['upos']))
 
         rows = cur.fetchall()
         return rows
@@ -174,9 +179,8 @@ def correction(conllu_sents, con=CONN):
     words, _ = get_words(conllu_sents)
     mistakes_list = is_morphology_correct(words)
     mistake_ids = list()
-    for mistake in mistake_list:
+    for mistake in mistakes_list:
         token_range = mistake['misc']['TokenRange']
         start, end = token_range.split(':')
         mistake_ids.append({ 'bos': int(start), 'end': int(end) })
-
     return mistake_ids
