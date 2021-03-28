@@ -494,10 +494,11 @@ def aspects_checking():
     file_id = data['file_id']
     text = get_last_version(file_id)
     aspects = data['chosen_aspects']
+    print('web_aspects', aspects)
     #ToDo create route in api and make a query instead of storing api data in web part as we do now
    # if not aspects or not hasattr(aspects, '__iter__') or any([aspect not in constants.ASPECTS for aspect in aspects]):
    #     aspects = constants.ASPECTS
-    checker_respond = requests.post(get_server_endpoint() + "/check_text", data={'text': text, 'aspects':aspects})
+    checker_respond = requests.post(os.path.join(get_server_endpoint(), "check_text"), data={'text': text, 'aspects':'&'.join(aspects)})
     if checker_respond.status_code == 200 and 'problems' in checker_respond.json():
         problems = checker_respond.json()['problems']
     else:
