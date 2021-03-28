@@ -6,13 +6,11 @@
 <link href="{{ url_for('static', filename='css/sticky-footer-navbar.css') }}" rel="stylesheet">
 <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
 <link href="{{ url_for('static', filename='css/editing.css') }}" rel="stylesheet">
-<!-- <link href="{{ url_for('static', filename='css/cat_check.css') }}" rel="stylesheet"> -->
 <script type='text/javascript' src="{{ url_for('static', filename='js/editing.js') }}"></script>
 <script type='text/javascript' src="{{ url_for('static', filename='js/highlighting.js') }}"></script>
 <script type='text/javascript' src="{{ url_for('static', filename='js/text_props.js') }}"></script>
 
 {% endblock %}
-
 {% block content %}
 <main role="main" class="container">
   <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
@@ -24,16 +22,16 @@
       <li class="nav-item">
         <a class="nav-link" name="editing-link" data-toggle="tab" href="#editing">Отредактировать свой текст</a>
       </li>
-      <li class="nav-item">
+      <!-- <li class="nav-item">
         <a class="nav-link" data-toggle="tab" href="#graphics">Общая информация</a>
-      </li>
+      </li> -->
     </ul>
 
     <div class="tab-content">
       <div class="tab-pane" id="graphics">
         <table class="table table-striped">
           <tbody>
-            <tr>
+            <!-- <tr>
               <th scope="row">Название</th>
               <td id='filename'></td>
             </tr>
@@ -52,7 +50,7 @@
             <tr>
               <th scope="row">Уровень по шкале CEFR</th>
               <td id='CEFR'></td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
       </div>
@@ -60,6 +58,26 @@
       <div class="tab-pane active" id="rdb">
         <a class="col-lg-8 col-md-10"><h5>График удобочитаемости</h5>Ваш результат - в последнем столбце.<br> Если удобочитаемость вашего текста значительно отличается от средней удобочитаемости научных статей, возможно, ваш текст написан неакадемично. <br> Если вы уверены, что придерживаетесь академического стиля, не стоит менять текст только с целью изменения значения readability</a>
         <canvas id="chart" class="col-xl-10 col-lg-12 col-md-12"></canvas>
+        <table class="table col-xl-5 col-lg-5 col-md-5">
+          <tbody>
+            <tr>
+              <th scope="row">Уровень по шкале CEFR</th>
+              <td id='CEFR'></td>
+            </tr>
+            <tr>
+              <th scope="row">Удобочитаемость</th>
+              <td id='FKG'></td>
+            </tr>
+            <tr>
+              <th scope="row">Всего слов</th>
+              <td id='totalWords'></td>
+            </tr>
+            <tr>
+              <th scope="row">Уникальных слов</th>
+              <td id='uniqueWords'></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
         <div class="tab-pane" id="editing">
@@ -106,4 +124,16 @@
     </span>
   </div>
 </footer>
+{% endblock %}
+
+{% block links %}
+<link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/sticky-footer-navbar.css') }}" rel="stylesheet">
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+<link href="{{ url_for('static', filename='css/editing.css') }}" rel="stylesheet">
+<script type='text/javascript' src="{{ url_for('static', filename='js/editing.js') }}"></script>
+<script type='text/javascript' src="{{ url_for('static', filename='js/highlighting.js') }}"></script>
+<script type='text/javascript' src="{{ url_for('static', filename='js/text_props.js') }}"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script type="text/javascript" src="script.js"></script>
 {% endblock %}

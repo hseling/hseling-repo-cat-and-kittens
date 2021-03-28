@@ -1,4 +1,8 @@
 import os, sys
+import codecs, re
+from nltk import sent_tokenize
+# import pandas as pd
+from collections import Counter
 from base64 import b64decode, b64encode
 # from flask import Flask, Blueprint, render_template, request, redirect, jsonify
 from logging import getLogger
@@ -11,7 +15,7 @@ from hseling_web_cat_and_kittens.file_manager import *
 import hseling_web_cat_and_kittens.spelling
 import hseling_web_cat_and_kittens.constants as constants
 # import secrets
-# from readability import countFKG, uniqueWords
+from hseling_web_cat_and_kittens.readability import countFKG, uniqueWords, CEFR
 
 from hseling_web_cat_and_kittens import boilerplate
 
@@ -466,16 +470,16 @@ def possible_aspects():
 
 @app.route('/web/get_statistics/<file_id>', methods=['GET'])
 def get_statistics(file_id):
-    #text = get_last_version(file_id)
+    text = get_last_version(file_id)
+    print(text)
     #text = "Это какой-то текст без ошибок."
-    #readability_score = countFKG(text)
-    #total, unique = uniqueWords(text)
-    readability_score = 1
-    total = 1
-    unique = 1
+    readability_score = countFKG(text)
+    total, unique = uniqueWords(text)
+    cefr_lvl = CEFR(readability_score)
     return jsonify({'readability_score': readability_score,
                     'total_words': total,
-                    'unique_words': unique})
+                    'unique_words': unique,
+                    'CEFR': cefr_lvl})
 
 @app.route('/web/send_last_version/<file_id>', methods=['GET'])
 def send_last_version(file_id):

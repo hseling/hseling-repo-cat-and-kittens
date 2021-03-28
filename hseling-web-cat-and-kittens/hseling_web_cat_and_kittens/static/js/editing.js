@@ -67,6 +67,7 @@ var setupTextEditing = function() {
   });
 
   $("input[name='submit_checking']").bind('click', function() {
+      console.log('click')
       const editedText = $('.edited_text_field').val();
       const file_id = urlParams.get('file_id');
       //   const editedText4NextChecking = {
