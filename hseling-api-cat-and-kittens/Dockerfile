@@ -28,8 +28,9 @@ COPY ./hseling-api-cat-and-kittens/hseling_api_cat_and_kittens /app/hseling_api_
 COPY ./hseling-api-cat-and-kittens/main.py /app/main.py
 
 RUN mkdir -p /data
+RUN mkdir -p ./data
+RUN mkdir -p ./data/upload
 
 ENV HSELING_API_CAT_AND_KITTENS_SETTINGS="/app/hseling_api_cat_and_kittens/default_settings.py"
 
 HEALTHCHECK CMD curl --fail http://localhost:5000/healthz || exit 1
-

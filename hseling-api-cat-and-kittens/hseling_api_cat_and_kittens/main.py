@@ -2,6 +2,7 @@ import os
 from base64 import b64decode, b64encode
 from flask import Flask, jsonify, request
 from logging import getLogger
+import secrets
 
 
 
@@ -26,6 +27,7 @@ app.config.update(
     CELERY_RESULT_BACKEND=boilerplate.CELERY_RESULT_BACKEND
 )
 celery = boilerplate.make_celery(app)
+UPLOAD_FOLDER = 'data/upload'
 
 if not app.debug:
     import logging
@@ -228,6 +230,41 @@ def lemma_search_endpoint():
 #         udpipe_output = pipeline.process('')
 #         solution = conllu.parse(udpipe_output)
 #     return jsonify({'solution' : str(solution)})
+
+def generate_file_id():
+    return secrets.token_urlsafe(16)
+
+
+@app.route("/api/upload_text_old", methods=['POST'])
+def upload_text_old():
+    text = request.values.get('text', '')
+    file_id = generate_file_id()
+    file_name = file_id + '.txt'
+    with open(os.path.join(UPLOAD_FOLDER, file_name), 'w') as f:
+        f.write(text)
+    return jsonify({'file_id': file_id})
+
+
+@app.route("/api/save_next_version_old", methods=['POST'])
+def save_next_version_old():
+    text = request.values.get('text', '')
+    if text:
+        file_name = file_id + '.txt'
+        with open(os.path.join(UPLOAD_FOLDER, file_name), 'w') as f:
+            f.write(text)
+    return jsonify({'success':True})
+
+
+@app.route("/api/get_last_version_old/<file_id>", methods=['GET'])
+def get_last_version_old(file_id):
+    file_name = str(file_id)+'.txt'
+    try:
+        with open(os.path.join(UPLOAD_FOLDER, file_name)):
+            text = f.read(file_id)
+        return jsonify({'text': text})
+    except IOError:
+        return 'Wrong id', 404
+
 
 @app.route("/api/check_text", methods=['POST'])
 def check_text():

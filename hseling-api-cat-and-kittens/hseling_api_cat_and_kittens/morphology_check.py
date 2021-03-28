@@ -30,9 +30,17 @@ CORRECT_JSON = 'correct.json'
 WRONG_JSON = 'wrong.json'
 CASH_LIMIT = 5000
 
-PATH_TO_MOST_COMMON_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + MOST_COMMON_JSON
-MOST_COMMON_CORPUS = json.load(open(PATH_TO_MOST_COMMON_JSON, encoding='utf-8'))
-MOST_COMMON_CORPUS = {token:set(known_parsing_results) for token, known_parsing_results in MOST_COMMON_CORPUS.items()}
+#PATH_TO_MOST_COMMON_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + MOST_COMMON_JSON
+#MOST_COMMON_CORPUS = json.load(open(PATH_TO_MOST_COMMON_JSON, encoding='utf-8'))
+#MOST_COMMON_CORPUS = {token:set(known_parsing_results) for token, known_parsing_results in MOST_COMMON_CORPUS.items()}
+
+#PATH_TO_CORRECT_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + CORRECT_JSON
+#CORRECT_ = json.load(open(PATH_TO_CORRECT_JSON, encoding='utf-8'))
+#CORRECT = {token:set(known_parsing_results) for token, known_parsing_results in CORRECT_.items()}
+
+#PATH_TO_WRONG_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + WRONG_JSON
+#WRONG_ = json.load(open(PATH_TO_WRONG_JSON, encoding='utf-8'))
+#WRONG = {token:set(known_parsing_results) for token, known_parsing_results in WRONG_.items()}
 
 
 def stringify_grammar(conllu_token):
@@ -57,19 +65,29 @@ class GrammarCash():
         else:
             self.cash = collections.defaultdict(set)
         self.cash_limit = max(cash_limit, len(self.cash))
-        
+
     def __contains__(self, token):
-        form = token['form'] 
+        form = token['form']
         return form in self.cash and self.stringify_grammar(token) in self.cash[form]
-    
+
     def add(self, token):
         stringified_grammar_tags = self.stringify_grammar(token)
         self.cash[token['form']].add(stringified_grammar_tags)
         if len(self.cash) > self.cash_limit:
             self.clean_cash()
 
+    # def strict_check(self, token):
+    #     form = token['form']
+    #     if form in self.cash:
+    #         if self.stringify_grammar(token) in self.cash[form]:
+    #             return True
+    #         else:
+    #             return False
+    #     else:
+    #         return None
+
     def strict_check(self, token):
-        form = token['form'] 
+        form = token['form']
         if form in self.cash and self.stringify_grammar(token) in self.cash[form]:
             return True
         else:
@@ -77,7 +95,7 @@ class GrammarCash():
 
     def clean_cash(self):
         self.cash = collections.defaultdict(set)
-        
+
     def stringify_grammar(self, conllu_token):
         return '_'.join([conllu_token['lemma'], conllu_token['upos'], str(conllu_token['feats'])])
 
@@ -87,13 +105,13 @@ CORRECT_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 WRONG_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 
 def is_morphology_correct(words, corpus_cash=CORPUS_CASH, correct_cash=CORRECT_CASH, wrong_cash=WRONG_CASH):
-    mistakes_list = list()
+    #mistakes_list = list()
     for token in words:
-        if corpus_cash.strict_check(token) or correct_cash.strict_check(token):
-            continue
-        elif wrong_cash.strict_check(token):
-            mistakes_list.append(token)
-        else:
+        #if corpus_cash.strict_check(token) or correct_cash.strict_check(token):
+           # continue
+        #elif wrong_cash.strict_check(token):
+           #mistakes_list.append(token)
+        if True:
             database_query_result = morph_error_catcher(token)
             if database_query_result:
                 correct_cash.add(token)

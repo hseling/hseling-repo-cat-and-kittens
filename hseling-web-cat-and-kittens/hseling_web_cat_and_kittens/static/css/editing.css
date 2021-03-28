@@ -1,31 +1,31 @@
-.aspect1 { 
+.aspect1 {
     border-bottom:1px solid red;
-    display:inline-block; 
-    padding-bottom:1px; 
+    display:inline-block;
+    padding-bottom:1px;
     }
 
-.aspect2 { 
+.aspect2 {
     border-bottom:1px solid blue;
-    display:inline-block; 
-    padding-bottom:1px; 
+    display:inline-block;
+    padding-bottom:1px;
     }
-	
-.aspect3 { 
+
+.aspect3 {
     border-bottom:1px solid orange;
-    display:inline-block; 
-    padding-bottom:1px; 
+    display:inline-block;
+    padding-bottom:1px;
     }
-	
-.aspect4 { 
-    border-bottom:1px solid yellow;
-    display:inline-block; 
-    padding-bottom:1px; 
-    
-	
-.aspect5 { 
+
+.aspect4 {
+    border-bottom:1px soli yellow;;
+    display:inline-block;
+    padding-bottom:1px;
+    }
+
+.aspect5 {
     border-bottom:1px solid purple;
-    display:inline-block; 
-    padding-bottom:1px; 
+    display:inline-block;
+    padding-bottom:1px;
     }
 
 .edited_text_field{

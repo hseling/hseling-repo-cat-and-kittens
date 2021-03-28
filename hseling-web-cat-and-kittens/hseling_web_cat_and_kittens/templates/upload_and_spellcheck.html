@@ -8,32 +8,37 @@
 <link href="{{ url_for('static', filename='css/sticky-footer-navbar.css') }}" rel="stylesheet">
 <script type=text/javascript src="{{ url_for('static', filename='js/jquery-3.5.1.min.js') }}"></script>
 <script type=text/javascript src="{{ url_for('static', filename='js/jquery.form.min.js') }}"></script>
-<!-- <script type=text/javascript src="{{ url_for('static', filename='js/upload_file_and_check_spelling.js') }}"></script> -->
+<script type=text/javascript src="{{ url_for('static', filename='js/upload_file_and_check_spelling.js') }}"></script>
 {% endblock %}
-
-
 
 
 
 {% block content %}
 <main role="main" class="container">
   <div class="row">
-    <h4>Загрузите новый файл</h4>
+    <h4>Вставьте текст на русском языке, который вы хотите отправить на проверку</h4>
   </div>
 
-  <form id="docx-form" method="POST">
+   <!--<form id="docx-form" method="POST">
     <div class="form-group">
-      <label for="exampleFormControlFile1">Загрузите txt-файл.<br>Длина абзацев в файле не должна превышать 100000 символов</label>
+      <label for="exampleFormControlFile1">Чтобы перейти к проверке, загрузите текст.<br>Длина абзацев в файле не должна превышать 100000 символов</label> -->
       <!-- <input accept='.txt, .docx' type="file" class="form-control-file" id="docx-file" name="file"> -->
-      <textarea name="input_text" id="input" cols="30" rows="10">{{ contents }}</textarea>
+     <!-- <textarea name="input_text" id="input" cols="30" rows="10">{{ contents }}</textarea>
       <button type="submit">Submit</button>
     </div>
-  </form>
+  </form> -->
 
-  <div class='spelling_corrections'>
-    <div class='spelling_instruction'>
+
+
+  <div class='upload_text'>
       Когда вы загрузите свою работу, мы предложим вам выбрать варианты исправления орфографических ошибок (если они
       будут), а затем перенаправим вас на страницу редактирования текста. Если среди вариантов исправления нет подходящего, вы сможете исправить опечатку вручную на следующем шаге.
+
+      <textarea class='form-control' id='user_text_field'></textarea>
+
+      <input type="button" class="btn btn-outline-primary" name="submit_text"
+        value="Отправить текст"/>
+      </div>
     </div>
 
     <div class="spelling_options"></div>
