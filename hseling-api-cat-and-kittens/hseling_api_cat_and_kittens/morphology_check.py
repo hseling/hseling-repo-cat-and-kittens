@@ -6,6 +6,7 @@ import time
 from random import randint, uniform
 from conllu import parse, parse_tree
 import json
+import collections
 
 from hseling_api_cat_and_kittens import boilerplate
 
@@ -32,14 +33,6 @@ CASH_LIMIT = 5000
 PATH_TO_MOST_COMMON_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + MOST_COMMON_JSON
 MOST_COMMON_CORPUS = json.load(open(PATH_TO_MOST_COMMON_JSON, encoding='utf-8'))
 MOST_COMMON_CORPUS = {token:set(known_parsing_results) for token, known_parsing_results in MOST_COMMON_CORPUS.items()}
-
-PATH_TO_CORRECT_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + CORRECT_JSON
-CORRECT_ = json.load(open(PATH_TO_CORRECT_JSON, encoding='utf-8'))
-CORRECT = {token:set(known_parsing_results) for token, known_parsing_results in CORRECT_.items()}
-
-PATH_TO_WRONG_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + WRONG_JSON
-WRONG_ = json.load(open(PATH_TO_WRONG_JSON, encoding='utf-8'))
-WRONG = {token:set(known_parsing_results) for token, known_parsing_results in WRONG_.items()}
 
 
 def stringify_grammar(conllu_token):
@@ -71,22 +64,9 @@ class GrammarCash():
     
     def add(self, token):
         stringified_grammar_tags = self.stringify_grammar(token)
-        if token['form'] not in self.cash:
-            self.cash[token['form']] = list()
-            self.cash[token['form']].append(stringified_grammar_tags)
-        self.cash[token['form']].append(stringified_grammar_tags)
+        self.cash[token['form']].add(stringified_grammar_tags)
         if len(self.cash) > self.cash_limit:
             self.clean_cash()
-            
-    # def strict_check(self, token):
-    #     form = token['form'] 
-    #     if form in self.cash:
-    #         if self.stringify_grammar(token) in self.cash[form]:
-    #             return True
-    #         else:
-    #             return False
-    #     else:
-    #         return None
 
     def strict_check(self, token):
         form = token['form'] 
@@ -100,16 +80,11 @@ class GrammarCash():
         
     def stringify_grammar(self, conllu_token):
         return '_'.join([conllu_token['lemma'], conllu_token['upos'], str(conllu_token['feats'])])
-    
-    def save_cash(self, path):
-        token2known_parses = {token:list(self.cash[token]) for token in self.cash}
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(token2known_parses, f)
 
 
 CORPUS_CASH = GrammarCash(cash=MOST_COMMON_CORPUS)
-CORRECT_CASH = GrammarCash(cash=CORRECT, cash_limit=CASH_LIMIT)
-WRONG_CASH = GrammarCash(cash=WRONG, cash_limit=CASH_LIMIT)
+CORRECT_CASH = GrammarCash(cash_limit=CASH_LIMIT)
+WRONG_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 
 def is_morphology_correct(words, corpus_cash=CORPUS_CASH, correct_cash=CORRECT_CASH, wrong_cash=WRONG_CASH):
     mistakes_list = list()
@@ -125,8 +100,6 @@ def is_morphology_correct(words, corpus_cash=CORPUS_CASH, correct_cash=CORRECT_C
             else:
                 mistakes_list.append(token)
                 wrong_cash.add(token)
-    correct_cash.save_cash(path=PATH_TO_CORRECT_JSON)
-    wrong_cash.save_cash(path=PATH_TO_WRONG_JSON)
     return mistakes_list
 
 def get_words(conllu_sents):
