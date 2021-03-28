@@ -6,6 +6,7 @@
 <link href="{{ url_for('static', filename='css/sticky-footer-navbar.css') }}" rel="stylesheet">
 <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
 <link href="{{ url_for('static', filename='css/editing.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/cat_check.css') }}" rel="stylesheet">
 <script type='text/javascript' src="{{ url_for('static', filename='js/editing.js') }}"></script>
 <script type='text/javascript' src="{{ url_for('static', filename='js/highlighting.js') }}"></script>
 <script type='text/javascript' src="{{ url_for('static', filename='js/text_props.js') }}"></script>
@@ -78,7 +79,7 @@
             <div class="row" name="saving_recommendation">
               Вы можете скопировать отредактированную версию своего текста и сохранить ее в личном кабинете
             </div>
-            <div class="row mt-3">
+            <div class="row mt-3 text_for_correction">
               <div class="col">
                 <div class='source_text'></div>
               </div>
@@ -87,6 +88,9 @@
                   <textarea class='form-control edited_text_field'></textarea>
                 </div>
               </div>
+            </div>
+            <div class="loader-wrapper">  <!-- style="padding-left: 474px;"> -->
+              
             </div>
           </div>
         </div>

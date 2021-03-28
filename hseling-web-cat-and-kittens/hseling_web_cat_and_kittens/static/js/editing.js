@@ -93,6 +93,8 @@ var setupTextEditing = function() {
               }
             });
             console.log('chosenNextCheckAspects', chosenNextCheckAspects)
+            $('.loader-wrapper').append('<div class="row mt-3 loader"></div>'); 
+            $('.text_for_correction').hide()
             $.ajax({
               type: "POST",
               url: "/web/aspects_checking",
@@ -113,6 +115,10 @@ var setupTextEditing = function() {
                // console.log('highlightedText', highlightedText);
                 $(".source_text").html(highlightedText);
                 $('.edited_text textarea').val(text);
+              },
+              complete: function() {
+                $('.loader').remove()
+                $('.text_for_correction').show()
               }
               //window.location.replace(encodeURI(`/editing_form?text_id=${file_id}_spelling`));
             });
