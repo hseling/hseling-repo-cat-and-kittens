@@ -259,10 +259,12 @@ def save_next_version_old():
 def get_last_version_old(file_id):
     file_name = str(file_id)+'.txt'
     try:
-        with open(os.path.join(UPLOAD_FOLDER, file_name)):
-            text = f.read(file_id)
+        with open(os.path.join(UPLOAD_FOLDER, file_name)) as f:
+            text = f.read()
+        print('Текст считан')
         return jsonify({'text': text})
     except IOError:
+        print('Текст не считан')
         return 'Wrong id', 404
 
 

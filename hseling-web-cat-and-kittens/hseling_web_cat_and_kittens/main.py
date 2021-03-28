@@ -464,17 +464,20 @@ def possible_aspects():
 @app.route('/web/get_statistics/<file_id>', methods=['GET'])
 def get_statistics(file_id):
     #text = get_last_version(file_id)
-    text = "Это какой-то текст без ошибок."
-    readability_score = countFKG(text)
-    total, unique = uniqueWords(text)
+    #text = "Это какой-то текст без ошибок."
+    #readability_score = countFKG(text)
+    #total, unique = uniqueWords(text)
+    readability_score = 1
+    total = 1
+    unique = 1
     return jsonify({'readability_score': readability_score,
                     'total_words': total,
                     'unique_words': unique})
 
 @app.route('/web/send_last_version/<file_id>', methods=['GET'])
 def send_last_version(file_id):
-    #text = get_last_version(file_id)
-    text = 'Более красивее чем кошки только собаки. Дествительно. Более красивее чем кошки только собаки. Я так считаю. Мы так считаем'
+    text = get_last_version(file_id)
+    print('Получен текст', text)
     return jsonify({'text': text})
 
 @app.route('/web/save_edited_text', methods=['POST'])
@@ -489,8 +492,7 @@ def save_edited_text():
 def aspects_checking():
     data = request.get_json()
     file_id = data['file_id']
-    #text = get_last_version(file_id)
-    text = 'Более красивее чем кошки только собаки. Дествительно. Более красивее чем кошки только собаки. Я так считаю. Мы так считаем'
+    text = get_last_version(file_id)
     aspects = data['chosen_aspects']
     #ToDo create route in api and make a query instead of storing api data in web part as we do now
    # if not aspects or not hasattr(aspects, '__iter__') or any([aspect not in constants.ASPECTS for aspect in aspects]):
