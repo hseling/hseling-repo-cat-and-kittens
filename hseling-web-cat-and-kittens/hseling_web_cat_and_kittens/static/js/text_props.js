@@ -18,7 +18,7 @@ var setupTextStatistics = function() {
         $("#CEFR").text(CEFR);
 
         var barData = {
-            labels: ['ECON', 'JUR', 'LING', 'PSYCH', 'HIST', 'SOC', 'YOU'],
+            labels: ['Экономика', 'Право', 'Лингвистика', 'Психология', 'История', 'Социология', 'Ваш текст'],
             datasets: [{
                 fillColor: ['rgba(151,187,205,0.2)', "rgba(151,187,205,0.2)", "rgba(151,187,205,0.2)", "rgba(151,187,205,0.2)", "rgba(151,187,205,0.2)", "rgba(151,187,205,0.2)", "rgba(151,187,205,1)"],
                 strokeColor: "rgba(151,187,205,1)",

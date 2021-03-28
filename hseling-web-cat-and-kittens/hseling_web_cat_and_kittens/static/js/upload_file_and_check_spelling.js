@@ -1,6 +1,10 @@
 function formatProblemContext(problem){
     const context = problem.context;
     let formattedContext = context;
+    const pretext = context.slice(0, problem.col);
+    const problemText = context.slice(problem.col, problem.col + problem.len);
+    const posttext = context.slice(problem.col + problem.len, problem.end);
+    formattedContext = pretext + '<b>' + problemText + '</b>' + posttext;
     if (typeof context === "string" &&
         typeof problem.context_pos === "number" &&
         typeof problem.context_end === "number" &&
@@ -10,9 +14,11 @@ function formatProblemContext(problem){
         problem.context_end <= context.length-1
     ){
         const pretext = context.slice(0, problem.context_pos);
+        console.log('pretext', pretext)
         const problemText = context.slice(problem.context_pos, problem.context_end);
+        console.log(problemText)
         const posttext = context.slice(problem.context_end);
-        formattedContext = pretext+'<b>'+problemText+'</b>'+posttext;
+        formattedContext = pretext + problemText + posttext;
     }
     return formattedContext
 }
