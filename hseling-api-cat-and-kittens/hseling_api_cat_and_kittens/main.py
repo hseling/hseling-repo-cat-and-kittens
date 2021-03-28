@@ -248,7 +248,8 @@ def upload_text_old():
 @app.route("/api/save_next_version_old", methods=['POST'])
 def save_next_version_old():
     text = request.values.get('text', '')
-    if text:
+    file_id = request.values.get('file_id', '')
+    if text and file_id:
         file_name = file_id + '.txt'
         with open(os.path.join(UPLOAD_FOLDER, file_name), 'w') as f:
             f.write(text)
