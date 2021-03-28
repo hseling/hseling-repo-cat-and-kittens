@@ -1,4 +1,4 @@
-#from hseling_api_cat_and_kittens.morphology_check import *
+from hseling_api_cat_and_kittens.morphology_check import *
 from hseling_lib_cat_and_kittens.syntax import *
 from hseling_lib_cat_and_kittens.duplicates import check_duplicates
 from abc import ABC, abstractmethod
