@@ -33,25 +33,11 @@ class IvsWeChecker(AbstractAspectChecker):
     def check(self, tokenlists):
         return find_IvsWe_problems(tokenlists)
 
+class MorphologyChecker(AbstractAspectChecker):
+   input_type = 'connlu_tokenlists'
 
-#class MorphologyChecker(AbstractAspectChecker):
-#    input_type = 'connlu_tokenlists'
-
-#    def check(self, tokenlists):
-#       return correction(tokenlists)
-
-
-
-#def morphology_checker(text):
-#    mistakes = correction(text)
-#    print(mistakes)
-#    if isinstance(mistakes, list):
-#        mistakes_ids = [ { 'bos': line['start_id'], 'end': line['end_id'] } for line in mistakes ]
-#        print(mistakes_ids)
-#        return mistakes_ids
-#    else:
-#        print("Wrong datatype")
-
+   def check(self, tokenlists):
+      return correction(tokenlists)
 
 class DuplicatesChecker(AbstractAspectChecker):
     input_type = 'text'
@@ -60,10 +46,8 @@ class DuplicatesChecker(AbstractAspectChecker):
         return check_duplicates(text)
 
 
-
-
 ASPECT2CHECKER  = {
-    #'morphology': MorphologyChecker(),
+    'morphology': MorphologyChecker(),
     'duplicates': DuplicatesChecker(),
     'genetive_chains': GenetiveChainsChecker(),
     'comparatives':ComparativeChecker(),

@@ -5,8 +5,8 @@ String.prototype.replaceAll = function(search, replacement) {
   return target.replace(new RegExp(search, 'g'), replacement);
 };
 
-const regex_start = /(?<=\s)\%{3}/
-const regex_end = /(?<=\S)\%{3}/
+const regex_start = /((?<=\s)\%{3}|^\%{3})/g
+const regex_end = /(?<=\S)\%{3}/g
 
 // Builds the HTML Table out of response.
 function buildHtmlTable(selector) {
@@ -17,8 +17,10 @@ function buildHtmlTable(selector) {
       row$.append($('<tr/>'));
       for (var colIndex = 0; colIndex < columns.length; colIndex++) {
         var cellValue = response[i][columns[colIndex]];
-        cellValue = cellValue.replaceAll(regex_start, "<strong>");
-        cellValue = cellValue.replaceAll(regex_end, "</strong>");
+        if (typeof cellValue === 'string') {
+          cellValue = cellValue.replaceAll(regex_start, "<strong>");
+          cellValue = cellValue.replaceAll(regex_end, "</strong>");
+        }
         if (cellValue == null) cellValue = "";
         row$.append($('<td/>').html(cellValue));
       }

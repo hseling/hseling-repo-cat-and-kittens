@@ -140,7 +140,7 @@ def bigram_search(search_token, search_metric, search_domain):
     """
 
     if search_metric in ['frequency', 'pmi', 'logdice', 't_score']:
-        
+        print("search metric found!!")
         if search_domain and search_domain != '_':
             frequency = f'd{search_domain}_freq'
             pmi = f'd{search_domain}_pmi'
@@ -154,8 +154,10 @@ def bigram_search(search_token, search_metric, search_domain):
             logdice = 'logdice'
         
         else:
-            sys.exit("A fatal error occured!")
+            print("A fatal error occured!")
         
+
+
         cur = CONN.cursor()
         stmt = '''SELECT tab2.unigram_token as entered_search, 
         tab1.unigram as collocate,
@@ -174,7 +176,7 @@ def bigram_search(search_token, search_metric, search_domain):
         2grams.''' + logdice + ''' as logdice
         FROM unigrams
         JOIN 2grams ON unigrams.id_unigram = 2grams.wordform_1 
-        WHERE unigrams.unigram = %s AND original_cat = 1) as tab2
+        WHERE unigrams.unigram = %s AND unigrams.original_cat = 1) as tab2
         ON tab2.collocate_id = tab1.id_unigram
         ORDER BY ''' + search_metric + ''' DESC
         LIMIT 20;'''
@@ -184,8 +186,9 @@ def bigram_search(search_token, search_metric, search_domain):
         json_data = []
         for result in rv:
             json_data.append(dict(zip(row_headers, result)))
-        
+        print(json_data)
         return json_data
+        
 
     else:
         return ['']
@@ -196,6 +199,7 @@ def check_syntrole(result, word, syntrole):
     word1_word2_result = []
 
     if syntrole != "_":
+        print("actually checking syntrole")
         for line in result:
             stmt = """SELECT * FROM wordpairs
                     WHERE synt_role_id = """ + syntrole + """
@@ -234,7 +238,7 @@ def generate_sent(result):
         sent = ''.join([('' if c in string.punctuation and c != "(" else ' ')+c for c in sent]).strip()
         sent = re.sub('^[{}]\s+'.format(string.punctuation), '', sent)
         sent = re.sub('(?<=\()\s', '', sent)
-    return sent
+        return sent
 
 def get_words4lemma(lemma, morph, pos):
     cur = CONN.cursor()
@@ -247,7 +251,7 @@ def get_words4lemma(lemma, morph, pos):
                                 WHERE uni.unigram REGEXP {}
                                 AND morph LIKE '%{}%'
                                 ORDER BY freq_all DESC
-                                LIMIT 10
+                                LIMIT 3
                             ) AS tab1
                             INNER JOIN pos pos ON tab1.pos = pos.pos
                             WHERE pos.id_pos REGEXP {};"""
@@ -322,6 +326,8 @@ def lemma_search(lemma1, lemma2, morph1, morph2, syntrole, min_, max_):
     word1_id_list = get_words4lemma(lemma1, morph1, pos1)
     word2_id_list = get_words4lemma(lemma2, morph2, pos2)
     sent_list = list()
+    print(word1_id_list)
+    print(word2_id_list)
 
     if word1_id_list and word2_id_list and lemma1 != "'^(.*?)$'" and lemma2 != "'^(.*?)$'":
         for word1 in word1_id_list:
@@ -349,7 +355,9 @@ def lemma_search(lemma1, lemma2, morph1, morph2, syntrole, min_, max_):
                         cur.execute(stmt_word1)
                         result = cur.fetchall()
                         word1_word2_result = check_syntrole(result, word1, syntrole)
-                        sent_list.append(generate_sent(word1_word2_result))
+                        sent = generate_sent(word1_word2_result)
+                        if sent:
+                            sent_list.append(sent)
                 else:
                     break
     
@@ -370,7 +378,9 @@ def lemma_search(lemma1, lemma2, morph1, morph2, syntrole, min_, max_):
             cur.execute(stmt_word1)
             result = cur.fetchall()
             word1_word2_result = check_syntrole(result, word1, syntrole)
-            sent_list.append(generate_sent(word1_word2_result))
+            sent = generate_sent(word1_word2_result)
+            if sent:
+                sent_list.append(sent)
     
     elif word2_id_list and lemma1 == "'^(.*?)$'":
         for word2 in word2_id_list:
@@ -385,13 +395,15 @@ def lemma_search(lemma1, lemma2, morph1, morph2, syntrole, min_, max_):
                                 INNER JOIN pos pos ON tags.pos = pos.pos
                             WHERE morph <> '_' 
                             ORDER BY uni.freq_all DESC LIMIT 50;"""
-            stmt_word1 = stmt.format(str(word2_id - max_), str(word2_id - min_), id_sent)
-            cur.execute(stmt_word1)
+            stmt_word2 = stmt.format(str(word2_id - max_), str(word2_id + min_), id_sent)
+            cur.execute(stmt_word2)
             result = cur.fetchall()
-            word1_word2_result = check_syntrole(result, word1, syntrole)
-            sent_list.append(generate_sent(word1_word2_result))
-        else:
-            return sent_list
+            word1_word2_result = check_syntrole(result, word2, syntrole)
+            sent = generate_sent(word1_word2_result)
+            if sent:
+                sent_list.append(sent)
+    else:
+        return sent_list
 
     row_headers = ["Example sentence"]
     json_data = []
