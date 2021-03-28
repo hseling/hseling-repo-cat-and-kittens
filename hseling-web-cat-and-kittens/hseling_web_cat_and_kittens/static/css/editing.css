@@ -45,7 +45,3 @@
     animation: spin 2s linear infinite;
     display: none;
 }
-
-.loader-wrapper {
-    padding-left: 500px;
-}
