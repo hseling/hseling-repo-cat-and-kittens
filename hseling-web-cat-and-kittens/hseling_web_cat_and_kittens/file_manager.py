@@ -7,7 +7,7 @@ import json
 
 
 def save_next_version(text, file_id):
-    requests.post(os.path.join(main.get_server_endpoint(), "/save_next_version_old"), data={"text" : text, "file_id":file_id})
+    requests.post(os.path.join(main.get_server_endpoint(), "save_next_version_old"), data={"text" : text, "file_id":file_id})
 
 # def get_last_version(file_id):
 #     file_name = get_txt_path(file_id)
