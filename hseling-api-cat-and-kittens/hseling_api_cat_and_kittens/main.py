@@ -273,8 +273,9 @@ def get_last_version_old(file_id):
 def check_text():
     #data = request.get_json(force=True)
     text = request.values.get('text', '')
-    aspects = request.values.get('aspects', [])
-    print('В апи получили данные', text, aspects)
+    aspects = request.values.get('aspects', '')
+    aspects = aspects.split('&')
+    print('aspects', aspects)
     #text = data['text'] if 'text' in data else ''
     #aspects = data['aspects'] if 'aspects' in data else None
     problems = checking.check_text(text, aspects)
