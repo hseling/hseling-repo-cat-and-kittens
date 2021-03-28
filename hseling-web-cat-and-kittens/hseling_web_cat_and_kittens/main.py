@@ -52,14 +52,14 @@ Login_Manager = LoginManager()
 Login_Manager.init_app(app)
 Login_Manager.login_view = 'login'
 
-#app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key_value')
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'data/database.db'
-#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key_value')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'data/database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-#app.config['MYSQL_HOST'] = os.environ['MYSQL_HOST']
-#app.config['MYSQL_USER'] = os.environ['MYSQL_USER']
-#app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_PASSWORD']
-#app.config['MYSQL_DATABASE'] = os.environ['MYSQL_DATABASE']
+app.config['MYSQL_HOST'] = os.environ['MYSQL_HOST']
+app.config['MYSQL_USER'] = os.environ['MYSQL_USER']
+app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_PASSWORD']
+app.config['MYSQL_DATABASE'] = os.environ['MYSQL_DATABASE']
 
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
@@ -323,6 +323,7 @@ def lemma_search():
             max_ = details['max'] if details['max'] != None else ""
             csrftoken = details['csrfmiddlewaretoken']
             if csrftoken == session.get('csrftoken', None):
+                print("csrftoken matches")
                 api_endpoint = get_server_endpoint() + "/lemma_search?"
                 api_endpoint += "&lemma1=" + lemma1
                 api_endpoint += "&lemma2=" + lemma2
@@ -346,6 +347,7 @@ def single_token():
             search_token = details['search'] if details['search'] != None else ""
             csrftoken = details['csrfmiddlewaretoken']
             if csrftoken == session.get('csrftoken', None):
+                print("csrftoken matches")
                 api_endpoint = get_server_endpoint() + "/single_token_search?token=" + search_token
                 result = requests.get(api_endpoint).content
                 return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=search_token, type="search")
@@ -376,6 +378,7 @@ def collocations():
         search_token = details['search_collocations']
         csrftoken = details['csrfmiddlewaretoken']
         if csrftoken == session.get('csrftoken', None):
+            print("csrftoken matches")
             search_token = details['search_collocations']
             search_metric = details['search-metric']
             search_metric = boilerplate.metric_converter(search_metric)

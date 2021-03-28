@@ -100,20 +100,20 @@ class GrammarCash():
         return '_'.join([conllu_token['lemma'], conllu_token['upos'], str(conllu_token['feats'])])
 
 
-#CORPUS_CASH = GrammarCash(cash=MOST_COMMON_CORPUS)
-CORPUS_CASH = GrammarCash(cash_limit=CASH_LIMIT)
+CORPUS_CASH = GrammarCash(cash=MOST_COMMON_CORPUS)
+# CORPUS_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 CORRECT_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 WRONG_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 
 
 
 def is_morphology_correct(words, corpus_cash=CORPUS_CASH, correct_cash=CORRECT_CASH, wrong_cash=WRONG_CASH):
-    #mistakes_list = list()
+    mistakes_list = list()
     for token in words:
-        #if corpus_cash.strict_check(token) or correct_cash.strict_check(token):
-           # continue
-        #elif wrong_cash.strict_check(token):
-           #mistakes_list.append(token)
+        if corpus_cash.strict_check(token) or correct_cash.strict_check(token):
+           continue
+        elif wrong_cash.strict_check(token):
+           mistakes_list.append(token)
         if True:
             database_query_result = morph_error_catcher(token)
             if database_query_result:
