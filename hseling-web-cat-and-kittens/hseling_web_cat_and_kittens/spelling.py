@@ -1,4 +1,6 @@
 import requests
+import nltk
+nltk.download('punkt')
 from nltk import sent_tokenize
 from copy import copy
 import json
@@ -14,7 +16,7 @@ class SpellChecker:
     def __init__(self, api_href='https://speller.yandex.net/services/spellservice.json/checkTexts', checker_limit=10000):
         self.__checker_limit = checker_limit
         self.__api_href = api_href
-		
+
     def _checker_query(self, texts):
         response = requests.post(self.__api_href, {'text': texts})
         sucsess = response.status_code == 200
@@ -58,8 +60,8 @@ class SpellChecker:
                 current_len += len(text)
         current_text_problems, current_text_problems_status_is_200 = self._checker_query(current_texts)
         spelling_problems += current_text_problems
-        no_server_problems *= current_text_problems_status_is_200 
-        return spelling_problems, no_server_problems     
+        no_server_problems *= current_text_problems_status_is_200
+        return spelling_problems, no_server_problems
 
     def __add_context_and_fix_ids(self, paragraph_problems, paragraphs):
         current_beginning_id = 0
@@ -78,7 +80,7 @@ class SpellChecker:
                     problem['context'] = current_sent
                     problem['pos'] += current_beginning_id
                     problem['end'] = problem['pos'] + problem['len']
-                    problem['context_pos'] = problem['pos'] - current_sent_data['pos']
+                    problem['context_pos'] = problem['pos'] - current_sent_data['pos'] - 1
                     problem['context_end'] = problem['end'] - current_sent_data['pos']
                    # print('отформатирован абзац')
             current_beginning_id = current_beginning_id + len(paragraph) + 1
@@ -106,7 +108,7 @@ class SpellChecker:
                 sent_position_data['end'] = prev_text_len + position + len(sent)
                 sents_with_ids.append(sent_position_data)
                 text_copy = text_copy[position + len(sent):]
-                prev_text_len = sent_position_data['end'] 
+                prev_text_len = sent_position_data['end']
         return sents_with_ids
 
 
