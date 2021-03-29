@@ -25,7 +25,7 @@ var setupTextEditing = function() {
   $.get(`/web/send_last_version/${urlParams.get('file_id')}`, function(data) {
     const text = data.text;
     console.log('get_text', data);
-    $(".source_text").html(text);
+    $(".source_text").html(text.replaceAll('\n', '<br>'));
     $('.edited_text_field').val(text);
   });
 
@@ -94,7 +94,7 @@ var setupTextEditing = function() {
               }
             });
             console.log('chosenNextCheckAspects', chosenNextCheckAspects)
-            $('.loader-wrapper').append('<div class="row mt-3 loader"></div>'); 
+            $('.loader-wrapper').append('<div class="row mt-3 loader"></div>');
             $('.text_for_correction').hide()
             $.ajax({
               type: "POST",
@@ -114,7 +114,7 @@ var setupTextEditing = function() {
                 const highlightedText = getCorrectionsHtml(text, problems, possibleAspectIds);
                 console.timeEnd('getCorrectionsHtml');
                // console.log('highlightedText', highlightedText);
-                $(".source_text").html(highlightedText);
+                $(".source_text").html(highlightedText.replaceAll('\n', '<br>'));
                 $('.edited_text textarea').val(text);
               },
               complete: function() {
