@@ -101,7 +101,6 @@ def find_space(text, beg, end):
   return beg, end
 
 def check_duplicates(text):
-  text = codecs.open("studtext1_reduced.txt", "r", "utf_8_sig").readlines()
   text = [line.rstrip() for line in text]
   text = " ".join(text)
   words = [word + " " for word in text.split(' ')]
