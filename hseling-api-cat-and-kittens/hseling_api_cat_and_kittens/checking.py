@@ -58,13 +58,16 @@ def check_text(text, aspects):
     checking_results = {}
     parsed_text = None
     for aspect in aspects:
-        checker = ASPECT2CHECKER[aspect]
-        if checker.input_type == 'connlu_tokenlists':
-            if parsed_text == None:
-                parsed_text = parsing.make_conll_with_udpipe(text)
-            checking_results[aspect] = checker.check(parsed_text)
-        elif checker.input_type == 'text':
-            checking_results[aspect] = checker.check(text)
-        else:
-            checking_results[aspect] = []
+        try:
+            checker = ASPECT2CHECKER[aspect]
+            if checker.input_type == 'connlu_tokenlists':
+                if parsed_text == None:
+                    parsed_text = parsing.make_conll_with_udpipe(text)
+                checking_results[aspect] = checker.check(parsed_text)
+            elif checker.input_type == 'text':
+                checking_results[aspect] = checker.check(text)
+            else:
+                checking_results[aspect] = []
+        except Exception as e:
+            print('Ошибка при применении проверки', e, aspect)
     return checking_results
