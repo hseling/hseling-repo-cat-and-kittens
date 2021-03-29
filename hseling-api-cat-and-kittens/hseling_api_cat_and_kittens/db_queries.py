@@ -201,18 +201,20 @@ def check_syntrole(result, word, syntrole):
     if syntrole != "_":
         print("actually checking syntrole")
         for line in result:
-            stmt = """SELECT * FROM wordpairs
-                    WHERE synt_role_id = """ + syntrole + """
-                    AND head_id = """ + word + """
-                    AND dependent_id = """ + line[0] + """
-                    ;"""
+            print(type(line[0]))
+            stmt = '''SELECT * FROM wordpairs
+                    WHERE synt_role_id = "''' + str(syntrole) + '''"
+                    AND head_id = ''' + str(word["id_word"]) + '''
+                    AND dependent_id = "''' + str(line[0]) + '''"
+                    ;'''
             cur.execute(stmt)
             res = cur.fetchall()
             if res:
                 result_dict = {"id_sent" : word["id_sent"], "word1" : word["id_word"], "word2" : line[0]}
                 word1_word2_result.append(result_dict)
             else:
-                continue
+                result_dict = {"id_sent" : 0, "word1" : 0, "word2" : 0}
+                word1_word2_result.append(result_dict)
     else:
         for line in result:
             result_dict = {"id_sent" : word["id_sent"], "word1" : word["id_word"], "word2" : line[0]}

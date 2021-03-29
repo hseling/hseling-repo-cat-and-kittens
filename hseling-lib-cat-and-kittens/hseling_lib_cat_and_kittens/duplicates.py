@@ -117,6 +117,6 @@ def check_duplicates(text):
           b = text.rfind(m.group(1))
           e = text.rfind(m.group(1)) + m.span(0)[1] - m.span(0)[0]
           right = find_space(text, b, e)
-          table.append({'beg': right[0], 'end': right[1]})
-          table.append({'beg': text.rfind(target), 'end': text.rfind(target)+len(target)})
+          table.append({'bos': right[0], 'end': right[1]})
+          table.append({'bos': text.rfind(target), 'end': text.rfind(target)+len(target)})
   return table

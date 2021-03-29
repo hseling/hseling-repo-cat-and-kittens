@@ -13,9 +13,20 @@
   <main role="main" class="container">
     <h1 class="cover-heading">Корпус CAT&ampKittens</h1>
     <h3>К какому ресурсу вы хотите обратиться?</h4>
-      <a class="links check" href="{{ url_for('upload_file') }}">Проверка текста на академичность ></a><br>
-      <a class="links collocations" href="{{ url_for('collocations') }}">Поиск устойчивых словосочетаний ></a><br>
-      <a class="links search" href="{{ url_for('search') }}">Поиск по корпусу ></a><br>
+
+      <div class="section">
+        <p class="guidelines">Проверьте, насколько ваш текст соответствует правилам академического стиля</p>
+        <a role="button" class="btn btn-sm btn-outline-dark links check" href="{{ url_for('render_upload_file') }}">Проверка академичности</a>
+      </div>
+      <div class="section">
+        <p class="guidelines">Поищите устойчивые словосочетания по нашему корпусу и отсортируйте их по разным метрикам</p>
+        <a role="button" class="btn btn-sm btn-outline-dark links collocations" href="{{ url_for('collocations') }}">Поиск устойчивых словосочетаний</a>
+      </div>
+      <div class="section">
+        <p class="guidelines">Поищите словоформы и леммы по нашему корпусу и узнайте, в каких частотных сочетаниях они используются</p>
+        <a role="button" class="btn btn-sm btn-outline-dark links search" href="{{ url_for('search') }}">Поиск по корпусу</a>
+      </div>
+      
   </main>
 
   <footer class="mastfoot mt-auto custom-footer">
