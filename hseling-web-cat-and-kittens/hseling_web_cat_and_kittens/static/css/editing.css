@@ -1,3 +1,11 @@
+#checking_options {
+    margin: 15px 0;
+}
+
+.submit {
+    margin-bottom: 15px;
+}
+
 .aspect1 {
     border-bottom:1px solid red;
     display:inline-block;
