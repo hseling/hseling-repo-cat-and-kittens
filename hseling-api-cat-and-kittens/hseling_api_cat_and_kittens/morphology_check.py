@@ -26,21 +26,11 @@ CONN = boilerplate.get_mysql_connection()
 
 CASHING_PREFIX = 'cashing/'
 MOST_COMMON_JSON = 'morphology_checking_most_common.json'
-CORRECT_JSON = 'correct.json'
-WRONG_JSON = 'wrong.json'
 CASH_LIMIT = 5000
 
 PATH_TO_MOST_COMMON_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + MOST_COMMON_JSON
 MOST_COMMON_CORPUS = json.load(open(PATH_TO_MOST_COMMON_JSON, encoding='utf-8'))
 MOST_COMMON_CORPUS = {token:set(known_parsing_results) for token, known_parsing_results in MOST_COMMON_CORPUS.items()}
-
-PATH_TO_CORRECT_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + CORRECT_JSON
-CORRECT_ = json.load(open(PATH_TO_CORRECT_JSON, encoding='utf-8'))
-CORRECT = {token:set(known_parsing_results) for token, known_parsing_results in CORRECT_.items()}
-
-PATH_TO_WRONG_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + WRONG_JSON
-WRONG_ = json.load(open(PATH_TO_WRONG_JSON, encoding='utf-8'))
-WRONG = {token:set(known_parsing_results) for token, known_parsing_results in WRONG_.items()}
 
 
 def stringify_grammar(conllu_token):
