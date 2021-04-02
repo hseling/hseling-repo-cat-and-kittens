@@ -510,7 +510,7 @@ def aspects_checking():
     if checker_respond.status_code == 200 and 'problems' in checker_respond.json():
         problems = checker_respond.json()['problems']
     else:
-        print('Что-то пошло не так')
+        print('Не удалось получить результаты проверки аспектов')
         problems = {aspect:[] for aspect in aspects}
     return jsonify({'problems':problems, 'text': text})
 

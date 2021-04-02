@@ -25,6 +25,8 @@ var setupTextEditing = function() {
   $.get(`/web/send_last_version/${urlParams.get('file_id')}`, function(data) {
     const text = data.text;
     console.log('get_text', data);
+    console.log('text', text);
+    console.log('prepared_text', text.replaceAll('\n', '<br>'));
     $(".source_text").html(text.replaceAll('\n', '<br>'));
     $('.edited_text_field').val(text);
   });
@@ -114,6 +116,9 @@ var setupTextEditing = function() {
                 const highlightedText = getCorrectionsHtml(text, problems, possibleAspectIds);
                 console.timeEnd('getCorrectionsHtml');
                // console.log('highlightedText', highlightedText);
+                console.log('text', text);
+                console.log('highlightedText', highlightedText);
+                console.log('prepared_text', highlightedText.replaceAll('\n', '<br>'));
                 $(".source_text").html(highlightedText.replaceAll('\n', '<br>'));
                 $('.edited_text textarea').val(text);
               },

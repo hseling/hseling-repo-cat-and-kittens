@@ -91,7 +91,8 @@ class GrammarCash():
 
 
 CORPUS_CASH = GrammarCash(cash=MOST_COMMON_CORPUS)
-# CORPUS_CASH = GrammarCash(cash_limit=CASH_LIMIT)
+#Commented dummy definition, which can be used, if you don't have the most common tokens saved, but want to run the app.
+#CORPUS_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 CORRECT_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 WRONG_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 

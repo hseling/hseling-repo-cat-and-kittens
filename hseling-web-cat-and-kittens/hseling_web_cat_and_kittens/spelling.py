@@ -116,6 +116,6 @@ def make_changes(text, corrections, ignore_options=['не исправлять']
     text = copy(text)
     corrections = sorted(corrections, reverse=True, key=lambda x: x['pos'])
     for correction in corrections:
-        if correction['chosen_value'] not in ignore_options:
+        if correction['chosen_value'] not in ignore_options and isinstance(correction['chosen_value'], str):
             text = text[:correction['pos']] + correction['chosen_value'] + text[correction['end']:]
     return  text
