@@ -347,6 +347,7 @@ def lemma_search():
 def single_token():
     if request.method == 'POST':
         details = request.form
+        print(details)
         if details['search'] != None:
             search_token = details['search'] if details['search'] != None else ""
             csrftoken = details['csrfmiddlewaretoken']

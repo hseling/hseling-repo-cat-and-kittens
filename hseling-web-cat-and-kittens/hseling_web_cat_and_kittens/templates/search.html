@@ -15,19 +15,19 @@
   <h1 class="mt-5">Поиск в корпусе академических текстов</h1>
   <div class="row">
     <div class="col-12">
-      <!-- <h5>Выберите предметную область:
+      <h5>Выберите предметную область:
         <div class="domain subject-field">
-          <select class="form-control" name="search-domain">
-            <option>Весь корпус</option>
-            <option>Лингвистика</option>
-            <option>Социология</option>
-            <option>История</option>
-            <option>Юриспруденция</option>
-            <option>Психология и педагогика</option>
-            <option>Экономика</option>
+          <select class="form-control" name="search-domain" id="forma">
+            <option value="">Весь корпус</option>
+            <option value="linguistics">Лингвистика</option>
+            <option value="sociology">Социология</option>
+            <option value="history">История</option>
+            <option value="law">Юриспруденция</option>
+            <option value="psychology">Психология и педагогика</option>
+            <option value="economics">Экономика</option>
           </select>
         </div>
-      </h5> -->
+      </h5>
     </div>
   </div>
   <div class="row">
@@ -38,6 +38,7 @@
           value={{ random_token }} />
         <input class="form-control mr-sm-2 exact-search-field" type="search" placeholder="Введите словоформу"
           aria-label="Search" name="search" style="width: 100%;">
+        <input type="hidden" name="corpus" class="hidden-input1">
         <button class="btn btn-success my-2 my-sm-0 exact-search-button" type="submit" form="form1">Искать</button>
       </form>
     </div>
@@ -109,6 +110,7 @@
 
           </div>
 
+          <input type="hidden" name="corpus" class="hidden-input2">
           <button class="btn btn-success lex-gram-button" type="submit" form="form2">Искать</button>
         </div>
 

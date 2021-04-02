@@ -27,3 +27,15 @@ function sendChoiceToParent(){
   window.opener.receiveFromChild ( checked );
   this.close();
 }
+
+
+window.onload = function() {
+  const selectCorpus = document.querySelector('.form-control');
+  selectCorpus.addEventListener('change', (event) => {
+  const hiddenInput1 = document.querySelector('.hidden-input1');
+  console.log(hiddenInput1);
+  const hiddentInput2 = document.querySelector('.hidden-input2');
+  hiddenInput1.value = event.target.value;
+  hiddentInput2.value = event.target.value;
+})
+}

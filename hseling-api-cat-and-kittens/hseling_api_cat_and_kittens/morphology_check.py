@@ -104,13 +104,15 @@ def is_morphology_correct(words, corpus_cash=CORPUS_CASH, correct_cash=CORRECT_C
            continue
         elif wrong_cash.strict_check(token):
            mistakes_list.append(token)
-        if True:
+        else:
             database_query_result = morph_error_catcher(token)
             if database_query_result:
                 correct_cash.add(token)
+                print("cashing correct")
             else:
                 mistakes_list.append(token)
                 wrong_cash.add(token)
+                print("cashing wrong")
     return mistakes_list
 
 def get_words(conllu_sents):
