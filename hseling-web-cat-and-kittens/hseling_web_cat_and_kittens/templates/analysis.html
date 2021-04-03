@@ -15,7 +15,7 @@
 {% block content %}
 <main role="main" class="container">
   <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
-    <h4>Анализ академичности текста</h4>
+    <h4>Анализ стиля текста</h4>
     <ul class="nav nav-tabs">
       <li class="nav-item">
         <a class="nav-link active" data-toggle="tab" href="#rdb">Общая информация</a>
@@ -58,14 +58,14 @@
 
       <div class="tab-pane active" id="rdb">
         <a class="col-lg-8 col-md-10"><h5>График удобочитаемости</h5>
-          <b>Удобочитаемость</b> - свойство текстового материала, характеризующее лёгкость восприятия его человеком в процессе чтения. 
+          <b>Удобочитаемость</b> - свойство текстового материала, характеризующее лёгкость восприятия его человеком в процессе чтения.
           Чем выше значение удобочитаемости текста, тем сложнее человеку его воспринимать.
           Например, удобочитаемость детских сказок может иметь значение 1, а научных текстов - 6. <br>
-          
+
           Мы рассчитываем удобочитаемость по формуле: <br>
           <a href="https://www.codecogs.com/eqnedit.php?latex=FKG&space;=&space;0.36*(\frac{total\:words}{total\:&space;sentences})&plus;&space;5.76(\frac{total\:&space;syllables}{total\:&space;words})&space;-&space;11.97" target="_blank"><img src="https://latex.codecogs.com/gif.latex?FKG&space;=&space;0.36*(\frac{total\:words}{total\:&space;sentences})&plus;&space;5.76(\frac{total\:&space;syllables}{total\:&space;words})&space;-&space;11.97" title="FKG = 0.36*(\frac{total\:words}{total\: sentences})+ 5.76(\frac{total\: syllables}{total\: words}) - 11.97" /></a><br>
-          Ваш результат - в последнем столбце.<br> 
-          Если удобочитаемость вашего текста значительно отличается от средней удобочитаемости научных статей, возможно, ваш текст написан неакадемично. <br> 
+          Ваш результат - в последнем столбце.<br>
+          Если удобочитаемость вашего текста значительно отличается от средней удобочитаемости научных статей, возможно, ваш текст написан неакадемично. <br>
           Если вы уверены, что придерживаетесь академического стиля, не стоит менять текст только с целью изменения значения readability
         </a>
         <canvas id="chart" class="col-xl-10 col-lg-12 col-md-12"></canvas>
@@ -119,7 +119,7 @@
               </div>
             </div>
             <div class="loader-wrapper" style="padding-left: 474px;">
-              
+
             </div>
           </div>
         </div>
