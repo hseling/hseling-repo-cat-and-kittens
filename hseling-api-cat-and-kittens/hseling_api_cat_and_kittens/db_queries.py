@@ -407,7 +407,6 @@ def single_token_search(search_token, search_domain):
             full_list_sentences.extend(list_id_sent)
 
         sent_list = list()
-
         for example in full_list_sentences:
             id_sent = str(example[0])
             id_token = example[1]
