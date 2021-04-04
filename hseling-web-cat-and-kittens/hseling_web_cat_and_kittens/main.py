@@ -516,7 +516,6 @@ def aspects_checking():
 
 @app.route('/web/analysis')
 def analysis():
-    dummy = 'dummy2'
     return render_template('analysis.html', title='Analysis')
 
 @app.route('/web/main')
