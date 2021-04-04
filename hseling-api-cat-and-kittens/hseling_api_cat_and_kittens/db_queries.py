@@ -151,7 +151,7 @@ def freq_search(search_token):
 #             result_dict = {"id_sent" : word["id_sent"], "id_text" : word["id_text"], "word1" : word["id_word"], "word2" : line[0]}
 #             word1_word2_result.append(result_dict)
 
-    return word1_word2_result
+    # return word1_word2_result
 
 def generate_sent(result):
     """
@@ -361,8 +361,8 @@ def lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain):
     json_data = []
     for sent in sent_list:
         json_data.append(dict(zip(row_headers, [sent])))
+    
     return json_data
-
 
 def single_token_search(search_token, search_domain):
     """

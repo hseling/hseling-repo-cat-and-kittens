@@ -339,6 +339,7 @@ def lemma_search():
                 api_endpoint += "&domain=" + details['domain']
                 result = requests.get(api_endpoint).content
                 return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=lemma1, page="search", display_type="elegant")
+
             else:
                 return "Error 404"
     else:
