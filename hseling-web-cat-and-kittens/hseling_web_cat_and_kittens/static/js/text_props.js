@@ -46,4 +46,4 @@ var setupTextStatistics = function() {
     });
 
 }
-setTimeout(setupTextStatistics, 0);
+setTimeout(setupTextStatistics, 300);

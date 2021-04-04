@@ -72,3 +72,16 @@
     margin: 10px;
 }
 
+.italics {
+    font-size: small;
+    font-style: italic;
+}
+
+.hidden-paragraph {
+    display: none;
+    /* font-size: x-large; */
+}
+
+.visible-paragraph {
+    display: inline;
+}
