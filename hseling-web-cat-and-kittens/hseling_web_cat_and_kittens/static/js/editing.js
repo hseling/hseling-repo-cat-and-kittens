@@ -118,8 +118,8 @@ var setupTextEditing = function() {
                // console.log('highlightedText', highlightedText);
                 console.log('text', text);
                 console.log('highlightedText', highlightedText);
-                console.log('prepared_text', highlightedText.replaceAll('\n', '<br>'));
-                $(".source_text").html(highlightedText.replaceAll('\n', '<br>'));
+                console.log('prepared_text', highlightedText);
+                $(".source_text").html(highlightedText);
                 $('.edited_text textarea').val(text);
               },
               complete: function() {

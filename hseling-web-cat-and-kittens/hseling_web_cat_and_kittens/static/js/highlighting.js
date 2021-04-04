@@ -65,27 +65,76 @@ function highlightText(text, problems) {
     if (!text) {
         return '';
     }
-    const id2labels = transformProblemsIntoDictionary(problems);
 
+    //If some checking functions included spaces into problem boundary, the space will be unvisible.
+    //To avoid it we will add the spaces before or after highlighted part
+    let partsStartWithSpace = [];
+    let partsEndWithSpace = [];
+
+    const id2labels = transformProblemsIntoDictionary(problems);
     const htmlParts2Highlight = [];
     let currentStartId = 0;
     let currentClassLabels = id2labels[currentStartId];
     for (let currentEndId = 1; currentEndId < text.length; currentEndId++) {
         if (!areSetsEqual(id2labels[currentEndId], currentClassLabels)) {
             const currentTextFragment = text.slice(currentStartId, currentEndId);
-
             const currentHtmlPart = addTags(currentTextFragment, currentClassLabels);
             console.debug('currentHtmlPart:', currentHtmlPart);
             console.debug('currentClassLabels:', currentClassLabels)
             htmlParts2Highlight.push(currentHtmlPart);
             currentStartId = currentEndId;
             currentClassLabels = id2labels[currentEndId];
+
+            if (currentTextFragment && currentTextFragment[0] === ' '){
+                partsStartWithSpace.push(currentHtmlPart);
+            }
+            if (currentTextFragment && currentTextFragment[currentTextFragment.length-1] === ' '){
+                partsEndWithSpace.push(currentHtmlPart);
+            }
+
         }
     }
-    const lastTextFragment = text.slice(currentStartId);
-    htmlParts2Highlight.push(addTags(lastTextFragment, currentClassLabels));
 
-    return htmlParts2Highlight.join('');
+    const lastTextFragment = text.slice(currentStartId);
+    const lastHtmlPart = addTags(lastTextFragment, currentClassLabels);
+    htmlParts2Highlight.push(lastHtmlPart);
+
+    if (lastTextFragment && lastTextFragment[0] === ' '){
+        partsStartWithSpace.push(lastHtmlPart);
+    }
+    if (lastTextFragment && lastTextFragment[lastTextFragment.length-1] === ' '){
+        partsEndWithSpace.push(lastHtmlPart);
+    }
+     let highlitedTextHtml = htmlParts2Highlight.join('');
+
+
+    let alreadyReplacedStarts = [];
+    if (partsStartWithSpace){
+        partsStartWithSpace.forEach(function(part){
+            if (alreadyReplacedStarts.indexOf(part) === -1){
+                const fixedPart = ' ' + part;
+                highlitedTextHtml = highlitedTextHtml.replaceAll(part, fixedPart);
+                alreadyReplacedStarts.push(part);
+            }
+        })
+    }
+
+    let alreadyReplacedEnds = [];
+    if (partsEndWithSpace){
+        partsEndWithSpace.forEach(function(part){
+            if (alreadyReplacedEnds.indexOf(part) === -1){
+                const fixedPart = part + ' ';
+                highlitedTextHtml = highlitedTextHtml.replaceAll(part, fixedPart);
+                alreadyReplacedEnds.push(part);
+            }
+        })
+    }
+
+    //highlitedTextHtml = highlitedTextHtml.replaceAll('[ +]', ' ');
+    highlitedTextHtml = highlitedTextHtml.replaceAll('\n', '<br>');
+
+
+    return highlitedTextHtml
 }
 
 var getCorrectionsHtml = function(text, corrections, possibleAspectIds) {
