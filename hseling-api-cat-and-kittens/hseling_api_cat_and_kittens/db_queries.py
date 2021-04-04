@@ -1,6 +1,7 @@
 from hseling_api_cat_and_kittens import boilerplate
 import sys
 import re, string
+import random
 
 CONN = boilerplate.get_mysql_connection()
 
@@ -17,6 +18,13 @@ def get_morph_dict():
     morph_list = cur.fetchall()
     string2morph_id = {row[1] : row[0] for row in morph_list}
     return string2morph_id
+
+def get_domain_dictionary():
+    cur = CONN.cursor()
+    cur.execute("SELECT * FROM domains;")
+    domain_list = cur.fetchall()
+    domain_name2id = {row[1] : str(row[0]) for row in domain_list}
+    return domain_name2id
 
 def get_values(lemma1, lemma2, morph1, morph2, syntrole, min_, max_):
 
@@ -130,69 +138,6 @@ def freq_search(search_token):
     
     return json_data
 
-def bigram_search(search_token, search_metric, search_domain):
-
-    """
-    produces list of most common bigram according to the first collocate (input by user);
-    search_token : user input word
-    search_metric : user selected metric for result sorting
-    search_domain : user selected domain of search
-    """
-
-    if search_metric in ['frequency', 'pmi', 'logdice', 't_score']:
-        print("search metric found!!")
-        if search_domain and search_domain != '_':
-            frequency = f'd{search_domain}_freq'
-            pmi = f'd{search_domain}_pmi'
-            tscore = f'd{search_domain}_tsc'
-            logdice = f'd{search_domain}_logdice'
-
-        elif search_domain and search_domain == '_': 
-            frequency = 'raw_frequency'
-            pmi = 'pmi'
-            tscore = 'tscore'
-            logdice = 'logdice'
-        
-        else:
-            print("A fatal error occured!")
-        
-
-
-        cur = CONN.cursor()
-        stmt = '''SELECT tab2.unigram_token as entered_search, 
-        tab1.unigram as collocate,
-        frequency,
-        pmi,
-        t_score,
-        logdice
-        FROM unigrams as tab1
-        JOIN
-        (SELECT 
-        unigrams.unigram as unigram_token, 
-        2grams.wordform_2 as collocate_id, 
-        2grams.''' + frequency + ''' as frequency,
-        2grams.''' + pmi + ''' as pmi,
-        2grams.''' + tscore + ''' as t_score,
-        2grams.''' + logdice + ''' as logdice
-        FROM unigrams
-        JOIN 2grams ON unigrams.id_unigram = 2grams.wordform_1 
-        WHERE unigrams.unigram = %s AND unigrams.original_cat = 1) as tab2
-        ON tab2.collocate_id = tab1.id_unigram
-        ORDER BY ''' + search_metric + ''' DESC
-        LIMIT 20;'''
-        cur.execute(stmt, (search_token, ))
-        row_headers = [x[0] for x in cur.description]
-        rv = cur.fetchall()
-        json_data = []
-        for result in rv:
-            json_data.append(dict(zip(row_headers, result)))
-        print(json_data)
-        return json_data
-        
-
-    else:
-        return ['']
-
 def check_syntrole(result, word, syntrole):
 
     cur = CONN.cursor()
@@ -246,14 +191,26 @@ def get_words4lemma(lemma, morph, pos):
     cur = CONN.cursor()
     word_id_list = list()
 
+    """SELECT temp.id_unigram, temp.unigram, pos, morph, freq_all FROM  
+    (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM unigrams t,      
+    (SELECT @row_num:=0) counter ORDER BY freq_all) temp
+    INNER JOIN unitags tags ON temp.id_unigram = tags.id_unigram
+    WHERE temp.row_num >= ROUND (.95* @row_num) 
+    AND temp.unigram REGEXP {}
+    AND temp.morph LIKE '%{}%' 
+    AND temp.original_cat = 1
+    ORDER BY freq_all DESC;"""
+
     stmt = """SELECT tab1.id_unigram FROM (    
-                                SELECT uni.id_unigram, uni.unigram, pos, morph, freq_all, original_cat
-                                FROM unigrams uni
-                                INNER JOIN unitags tags ON uni.id_unigram = tags.id_unigram
-                                WHERE uni.unigram REGEXP {}
-                                AND morph LIKE '%{}%'
+                                SELECT temp.id_unigram, temp.unigram, pos, morph, freq_all FROM  
+                                (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM unigrams t,      
+                                (SELECT @row_num:=0) counter ORDER BY freq_all) temp
+                                INNER JOIN unitags tags ON temp.id_unigram = tags.id_unigram
+                                WHERE temp.row_num >= ROUND (.95* @row_num) 
+                                AND temp.unigram REGEXP {}
+                                AND temp.morph LIKE '%{}%' 
+                                AND temp.original_cat = 1
                                 ORDER BY freq_all DESC
-                                LIMIT 3
                             ) AS tab1
                             INNER JOIN pos pos ON tab1.pos = pos.pos
                             WHERE pos.id_pos REGEXP {};"""
@@ -271,53 +228,6 @@ def get_words4lemma(lemma, morph, pos):
         result = cur.fetchall()
         word_id_list.extend([{"id_word" : word[0], "id_sent" : word[1]} for word in result])
     return word_id_list
-
-def single_token_search(search_token):
-    """
-    search sentences containing input lemma
-    search token : input token
-    """
-
-    cur = CONN.cursor()
-
-    cur.execute("SELECT unigram, id_unigram, freq_all FROM unigrams WHERE BINARY unigram = %s ORDER BY freq_all DESC LIMIT 3;", (search_token, ))
-
-    list_id_unigram = cur.fetchall()
-    dict_unigram_sent = {elem[1] : [] for elem in list_id_unigram}
-
-    stmt = "SELECT id_sent FROM words WHERE"
-    for id_unigram in dict_unigram_sent.keys():
-        stmt = "SELECT id_sent, id_word FROM words WHERE id_unigram = " + str(id_unigram) + " LIMIT 2;"
-        cur.execute(stmt)
-        list_id_sent = cur.fetchall()
-        for id_ in list_id_sent:
-            dict_unigram_sent[id_unigram].append({"id_sent": id_[0], "id_word": id_[1]})
-
-    sent_list = []
-
-    for value in dict_unigram_sent.values():
-        for example in value:
-            id_sent = str(example["id_sent"])
-            search_token_id = example["id_word"]
-            sent_start = str(example["id_word"] - 5)
-            sent_end = str(example["id_word"] + 5)
-            stmt = f"SELECT id_word, word FROM words WHERE id_sent = {id_sent} AND "
-            stmt += f"(id_word >= {sent_start} AND id_word < {sent_end})"
-            stmt += f""
-            cur.execute(stmt)
-            sent = cur.fetchall()
-            sent = ["%%%" + word[1] + "%%%" if word[0] == search_token_id else word[1] for word in sent]
-            sent = ''.join([('' if c in string.punctuation and c != "(" else ' ')+c for c in sent]).strip()
-            sent = re.sub('^[{}]\s+'.format(string.punctuation), '', sent)
-            sent = re.sub('(?<=\()\s', '', sent)
-            sent_list.append(sent)
-
-    row_headers = ["Example sentence"]
-    json_data = []
-    for sent in sent_list:
-        json_data.append(dict(zip(row_headers, [sent])))
-    
-    return json_data
 
 def lemma_search(lemma1, lemma2, morph1, morph2, syntrole, min_, max_):
     
@@ -407,8 +317,169 @@ def lemma_search(lemma1, lemma2, morph1, morph2, syntrole, min_, max_):
     else:
         return sent_list
 
-    row_headers = ["Example sentence"]
+    row_headers = ["Примерные предложения"]
     json_data = []
     for sent in sent_list:
         json_data.append(dict(zip(row_headers, [sent])))
     return json_data
+
+
+def single_token_search(search_token, search_domain):
+    """
+    search sentences containing input lemma
+    search token : input token
+    """
+    domain_name2id = get_domain_dictionary()
+    domain = domain_name2id.get(search_domain)
+
+    if domain:
+        frequency = f'freq{domain}'
+    else:   
+        frequency = 'freq_all'
+
+    cur = CONN.cursor()
+    stmt = """SELECT unigram, id_unigram, """ + frequency + """ FROM  
+    (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM unigrams t,      
+    (SELECT @row_num:=0) counter ORDER BY """ + frequency + """) temp 
+    WHERE temp.row_num >= ROUND (.95* @row_num) 
+    AND temp.unigram = %s
+    AND temp.original_cat = 1
+    ORDER BY freq_all DESC;"""
+
+    cur.execute(stmt, (search_token, ))
+
+    list_id_unigram = cur.fetchall()
+    dict_unigram_sent = {elem[1] : [] for elem in list_id_unigram}
+
+    stmt = """SELECT COUNT(*) FROM words WHERE id_unigram in (""" + ', '.join(str(key) for key in dict_unigram_sent.keys()) + """);"""
+    cur.execute(stmt)
+    count_list = cur.fetchall()
+    count = count_list[0][0]
+
+    full_list_sentences = list()
+    for id_unigram in dict_unigram_sent.keys():
+
+        stmt = """SELECT w.id_sent, w.id_word, w.id_text, meta.author, meta.year, meta.title FROM 
+                  (SELECT id_sent, id_word, id_text
+                  FROM words  
+                  WHERE id_unigram = """ + str(id_unigram) + """) AS w 
+                    JOIN metadata meta ON w.id_text = meta.id_text
+                  ORDER BY RAND()
+                  LIMIT 5;"""
+        cur.execute(stmt)
+        list_id_sent = cur.fetchall()
+        full_list_sentences.extend(list_id_sent)
+
+    sent_list = list()
+
+    for example in full_list_sentences:
+        id_sent = str(example[0])
+        id_token = example[1]
+        id_text = str(example[2])
+        author = str(example[3])
+        year = str(example[4])
+        title = str(example[5])
+
+        ## MAIN PARAGRAPH
+        stmt = f"SELECT id_word, word FROM words WHERE id_sent = {id_sent} AND id_text = {id_text};"
+        cur.execute(stmt)
+        main_paragraph = cur.fetchall()
+        main_paragraph = stringify_sent(main_paragraph, id_token)
+
+        ## 1st PARAGRAPH
+        stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(id_sent) - 1)} AND id_text = {id_text};"
+        cur.execute(stmt)
+        first_paragraph = cur.fetchall()
+        # first_paragraph = "<p class='hidden-paragraph'>" + stringify_sent(first_paragraph, id_token) + "</p>"
+        first_paragraph = stringify_sent(first_paragraph, id_token)
+
+        ## LAST PARAGRAPH
+        stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(id_sent) + 1)} AND id_text = {id_text};"
+        cur.execute(stmt)
+        last_paragraph = cur.fetchall()
+        # last_paragraph = "<p class='hidden-paragraph'>" + stringify_sent(last_paragraph, id_token) + "</p>"
+        last_paragraph = stringify_sent(last_paragraph, id_token)
+
+        ## REFERENCE
+        # reference = f" <p class='italics'>({author}, {year}, {title})</p>"
+        reference = f"{author}, {year}, {title}"
+        
+        # sent = first_paragraph + main_paragraph + last_paragraph + reference
+        sent = (first_paragraph, main_paragraph, last_paragraph, reference)
+        sent_list.append(sent)
+
+    row_headers = [f"Примерные предложения, количестко найденных текстов: {count} (мы показываем только их часть)"]
+    json_data = []
+    for sent in sent_list:
+        json_data.append(dict(zip(row_headers, [sent])))
+    
+    return json_data
+
+def stringify_sent(sent_db_result, word_to_boldify):
+    sent = ["<strong>" + word[1] + "</strong>" if word[0] == word_to_boldify else word[1] for word in sent_db_result]
+    sent = ''.join([('' if c in string.punctuation and c != "(" else ' ')+c for c in sent]).strip()
+    sent = re.sub('^[{}]\s+'.format(string.punctuation), '', sent)
+    sent = re.sub('(?<=\()\s', '', sent)
+    return sent
+
+def collocation_search(search_token, search_metric, search_domain):
+
+    """
+    produces list of most common bigram according to the first collocate (input by user);
+    search_token : user input word
+    search_metric : user selected metric for result sorting
+    search_domain : user selected domain of search
+    """
+
+    domain_name2id = get_domain_dictionary()
+
+    if search_metric in ['frequency', 'pmi', 'logdice', 't_score']:
+
+        domain = domain_name2id.get(search_domain)
+
+        if domain:
+            frequency = f'd{domain}_freq'
+            pmi = f'd{domain}_pmi'
+            tscore = f'd{domain}_tsc'
+            logdice = f'd{domain}_logdice'
+
+        else:   
+            frequency = 'raw_frequency'
+            pmi = 'pmi'
+            tscore = 'tscore'
+            logdice = 'logdice'
+        
+        cur = CONN.cursor()
+        stmt = '''SELECT tab2.unigram_token as entered_search, 
+        tab1.unigram as collocate,
+        frequency,
+        pmi,
+        t_score,
+        logdice
+        FROM unigrams as tab1
+        JOIN
+        (SELECT 
+        unigrams.unigram as unigram_token, 
+        2grams.wordform_2 as collocate_id, 
+        2grams.''' + frequency + ''' as frequency,
+        2grams.''' + pmi + ''' as pmi,
+        2grams.''' + tscore + ''' as t_score,
+        2grams.''' + logdice + ''' as logdice
+        FROM unigrams
+        JOIN 2grams ON unigrams.id_unigram = 2grams.wordform_1 
+        WHERE unigrams.unigram = %s AND unigrams.original_cat = 1) as tab2
+        ON tab2.collocate_id = tab1.id_unigram
+        ORDER BY ''' + search_metric + ''' DESC
+        LIMIT 20;'''
+        cur.execute(stmt, (search_token, ))
+        row_headers = [x[0] for x in cur.description]
+        rv = cur.fetchall()
+        json_data = []
+        for result in rv:
+            json_data.append(dict(zip(row_headers, result)))
+        print(json_data)
+        return json_data
+        
+
+    else:
+        return ['']

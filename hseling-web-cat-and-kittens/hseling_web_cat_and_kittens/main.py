@@ -337,7 +337,7 @@ def lemma_search():
                 api_endpoint += "&min=" + min_
                 api_endpoint += "&max=" + max_
                 result = requests.get(api_endpoint).content
-                return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=lemma1, type="search")
+                return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=lemma1, page="search", display_type="table")
             else:
                 return "Error 404"
     else:
@@ -354,8 +354,9 @@ def single_token():
             if csrftoken == session.get('csrftoken', None):
                 print("csrftoken matches")
                 api_endpoint = get_server_endpoint() + "/single_token_search?token=" + search_token
+                api_endpoint += "&domain=" + details['domain']
                 result = requests.get(api_endpoint).content
-                return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=search_token, type="search")
+                return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=search_token, page="search", display_type="elegant")
             else:
                 return "Error 400"
     else:
@@ -389,7 +390,7 @@ def collocations():
             search_metric = boilerplate.metric_converter(search_metric)
             search_domain = details['search-domain']
             search_domain = boilerplate.domain_to_index(search_domain)
-            api_endpoint = get_server_endpoint() + "/bigram_search?token=" + search_token + "&metric="
+            api_endpoint = get_server_endpoint() + "/collocation_search?token=" + search_token + "&metric="
             api_endpoint += search_metric + "&domain=" + str(search_domain)
             result = requests.get(api_endpoint).content
             result = json.loads(result)
@@ -397,7 +398,7 @@ def collocations():
             if not result:
                 return 'Error 400'
             else:
-                return render_template('db_response.html', response=json.dumps(result), token=search_token, type="collocations")
+                return render_template('db_response.html', response=json.dumps(result), token=search_token, page="collocations" , display_type="table")
         else: "Error 400"
 
 #@app.route('/web/upload_file', methods=['GET', 'POST'])

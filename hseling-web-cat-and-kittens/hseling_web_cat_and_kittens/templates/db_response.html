@@ -9,14 +9,14 @@
 {% endblock %}
 
 {% block content %}
-<body onLoad="buildHtmlTable('#response-table')">
+<body onLoad="displayResponse('#response')">
     <main role=main class=container>
 
-        <h1>Database response for token "{{ token }}"</h1>
+        <!-- <h1>Database response for token "{{ token }}"</h1> -->
 
-        <table id="response-table" data-db="{{ response }}" class="table"></table>
+        <table id="response" data-displaytype="{{ display_type }}" data-db="{{ response }}" class="table"></table>
 
-        <p>Go to <a class="link-to-new-search" data-page="{{ type }}" href="">a new search</a></p>
+        <p>Поищите <a class="link-to-new-search" data-page="{{ page }}" href="">что-то ещё</a></p>
 
     </main>
 </body>
