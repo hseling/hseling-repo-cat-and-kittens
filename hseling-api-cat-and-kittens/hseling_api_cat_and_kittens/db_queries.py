@@ -390,21 +390,17 @@ def single_token_search(search_token, search_domain):
         stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(id_sent) - 1)} AND id_text = {id_text};"
         cur.execute(stmt)
         first_paragraph = cur.fetchall()
-        # first_paragraph = "<p class='hidden-paragraph'>" + stringify_sent(first_paragraph, id_token) + "</p>"
         first_paragraph = stringify_sent(first_paragraph, id_token)
 
         ## LAST PARAGRAPH
         stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(id_sent) + 1)} AND id_text = {id_text};"
         cur.execute(stmt)
         last_paragraph = cur.fetchall()
-        # last_paragraph = "<p class='hidden-paragraph'>" + stringify_sent(last_paragraph, id_token) + "</p>"
         last_paragraph = stringify_sent(last_paragraph, id_token)
 
         ## REFERENCE
-        # reference = f" <p class='italics'>({author}, {year}, {title})</p>"
         reference = f"{author}, {year}, {title}"
         
-        # sent = first_paragraph + main_paragraph + last_paragraph + reference
         sent = (first_paragraph, main_paragraph, last_paragraph, reference)
         sent_list.append(sent)
 
@@ -420,6 +416,7 @@ def stringify_sent(sent_db_result, word_to_boldify):
     sent = ''.join([('' if c in string.punctuation and c != "(" else ' ')+c for c in sent]).strip()
     sent = re.sub('^[{}]\s+'.format(string.punctuation), '', sent)
     sent = re.sub('(?<=\()\s', '', sent)
+    sent += " "
     return sent
 
 def collocation_search(search_token, search_metric, search_domain):
