@@ -9,31 +9,31 @@
 .aspect1 {
     border-bottom:1px solid red;
     display:inline-block;
-    padding-bottom:1px;
+    padding-bottom:2px;
     }
 
 .aspect2 {
     border-bottom:1px solid blue;
     display:inline-block;
-    padding-bottom:1px;
+    padding-bottom:2px;
     }
 
 .aspect3 {
     border-bottom:1px solid orange;
     display:inline-block;
-    padding-bottom:1px;
+    padding-bottom:2px;
     }
 
 .aspect4 {
     border-bottom:1px solid rgb(13, 84, 70);
     display:inline-block;
-    padding-bottom:1px;
+    padding-bottom:2px;
     }
 
 .aspect5 {
     border-bottom:1px solid purple;
     display:inline-block;
-    padding-bottom:1px;
+    padding-bottom:2px;
     }
 
 .edited_text_field{
