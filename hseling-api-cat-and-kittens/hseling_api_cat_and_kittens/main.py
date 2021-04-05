@@ -216,8 +216,6 @@ def lemma_search_endpoint():
     domain = request.args.get("domain")
     return jsonify({"values": db_queries.lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain)})
 
-
-
 # @app.route('/api/udpipe', methods=['POST'])
 # def udpify():
 #     from ufal.udpipe import Model, Pipeline

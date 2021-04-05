@@ -150,7 +150,6 @@ def freq_search(search_token):
 #         for line in result:
 #             result_dict = {"id_sent" : word["id_sent"], "id_text" : word["id_text"], "word1" : word["id_word"], "word2" : line[0]}
 #             word1_word2_result.append(result_dict)
-
     # return word1_word2_result
 
 def generate_sent(result):
@@ -162,12 +161,14 @@ def generate_sent(result):
     cur = CONN.cursor()
     for result_tuple in result:
 
+
         ## MAIN PARAGRAPH
         stmt = f"SELECT id_word, word FROM words WHERE id_sent = {result_tuple[2]} AND id_text = {result_tuple[3]};"
         cur.execute(stmt)
         main_paragraph = cur.fetchall()
         main_paragraph = stringify_sent(main_paragraph, [result_tuple[0], result_tuple[1], ])
 
+<<<<<<< HEAD
         ## 1st PARAGRAPH
         stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(result_tuple[2]) - 1)} AND id_text = {result_tuple[3]};"
         cur.execute(stmt)
