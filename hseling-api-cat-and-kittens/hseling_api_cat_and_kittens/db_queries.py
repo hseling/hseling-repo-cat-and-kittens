@@ -387,10 +387,10 @@ def single_token_search(search_token, search_domain):
         list_id_unigram = cur.fetchall()
         dict_unigram_sent = {elem[1] : [] for elem in list_id_unigram}
 
-        stmt = """SELECT COUNT(*) FROM words WHERE id_unigram in (""" + ', '.join(str(key) for key in dict_unigram_sent.keys()) + """);"""
+        stmt = """SELECT COUNT(DISTINCT id_text) FROM words WHERE id_unigram in (""" + ', '.join(str(key) for key in dict_unigram_sent.keys()) + """);"""
         cur.execute(stmt)
-        count_list = cur.fetchall()
-        count = count_list[0][0]
+        text_count = cur.fetchall()
+        text_count = text_count[0][0]
 
         full_list_sentences = list()
         for id_unigram in dict_unigram_sent.keys():
@@ -440,7 +440,7 @@ def single_token_search(search_token, search_domain):
             sent = (first_paragraph, main_paragraph, last_paragraph, reference)
             sent_list.append(sent)
 
-        row_headers = [f"Примерные предложения, количестко найденных текстов: {count} (мы показываем только их часть)"]
+        row_headers = [f"Примерные предложения, количестко найденных текстов: {text_count} (мы показываем только их часть)"]
         json_data = []
         for sent in sent_list:
             json_data.append(dict(zip(row_headers, [sent])))
