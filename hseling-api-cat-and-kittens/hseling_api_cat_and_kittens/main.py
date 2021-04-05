@@ -210,10 +210,11 @@ def lemma_search_endpoint():
     lemma2 = request.args.get("lemma2")
     morph1 = request.args.get("morph1")
     morph2 = request.args.get("morph2")
-    syntrole = request.args.get("syntrole")
+    # syntrole = request.args.get("syntrole")
     min_ = request.args.get("min")
     max_ = request.args.get("max")
-    return jsonify({"values": db_queries.lemma_search(lemma1, lemma2, morph1, morph2, syntrole, min_, max_)})
+    domain = request.args.get("domain")
+    return jsonify({"values": db_queries.lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain)})
 
 
 # @app.route('/api/udpipe', methods=['POST'])
