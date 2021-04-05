@@ -168,7 +168,6 @@ def generate_sent(result):
         main_paragraph = cur.fetchall()
         main_paragraph = stringify_sent(main_paragraph, [result_tuple[0], result_tuple[1], ])
 
-<<<<<<< HEAD
         ## 1st PARAGRAPH
         stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(result_tuple[2]) - 1)} AND id_text = {result_tuple[3]};"
         cur.execute(stmt)
