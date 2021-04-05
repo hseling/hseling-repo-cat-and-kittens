@@ -363,10 +363,6 @@ def lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain):
     
     return json_data
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 2138af955d679bd4038a0e46e8ba261ae4766124
 def single_token_search(search_token, search_domain):
     """
     search sentences containing input lemma
