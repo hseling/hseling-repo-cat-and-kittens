@@ -322,7 +322,7 @@ def lemma_search():
             lemma2 = details['lemma2'] if details['lemma2'] != None else ""
             morph1 = details['morph1'] if details['morph1'] != None else ""
             morph2 = details['morph2'] if details['morph2'] != None else ""
-            syntrole = details['syntax'] if details['syntax'] != "syntrole" else ""
+            # syntrole = details['syntax'] if details['syntax'] != "syntrole" else ""
             min_ = details['min'] if details['min'] != None else ""
             max_ = details['max'] if details['max'] != None else ""
             csrftoken = details['csrfmiddlewaretoken']
@@ -333,11 +333,12 @@ def lemma_search():
                 api_endpoint += "&lemma2=" + lemma2
                 api_endpoint += "&morph1=" + morph1
                 api_endpoint += "&morph2=" + morph2
-                api_endpoint += "&syntrole=" + syntrole
+                # api_endpoint += "&syntrole=" + syntrole
                 api_endpoint += "&min=" + min_
                 api_endpoint += "&max=" + max_
+                api_endpoint += "&domain=" + details['domain']
                 result = requests.get(api_endpoint).content
-                return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=lemma1, page="search", display_type="table")
+                return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=lemma1, page="search", display_type="elegant")
             else:
                 return "Error 404"
     else:
