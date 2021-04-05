@@ -150,7 +150,7 @@ def freq_search(search_token):
 #         for line in result:
 #             result_dict = {"id_sent" : word["id_sent"], "id_text" : word["id_text"], "word1" : word["id_word"], "word2" : line[0]}
 #             word1_word2_result.append(result_dict)
-    # return word1_word2_result
+    return word1_word2_result
 
 def generate_sent(result):
     """
@@ -160,7 +160,6 @@ def generate_sent(result):
     """
     cur = CONN.cursor()
     for result_tuple in result:
-
 
         ## MAIN PARAGRAPH
         stmt = f"SELECT id_word, word FROM words WHERE id_sent = {result_tuple[2]} AND id_text = {result_tuple[3]};"
@@ -364,6 +363,10 @@ def lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain):
     
     return json_data
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2138af955d679bd4038a0e46e8ba261ae4766124
 def single_token_search(search_token, search_domain):
     """
     search sentences containing input lemma
@@ -407,6 +410,10 @@ def single_token_search(search_token, search_domain):
             full_list_sentences.extend(list_id_sent)
 
         sent_list = list()
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2138af955d679bd4038a0e46e8ba261ae4766124
         for example in full_list_sentences:
             id_sent = str(example[0])
             id_token = example[1]
