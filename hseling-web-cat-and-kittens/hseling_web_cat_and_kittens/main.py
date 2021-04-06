@@ -87,8 +87,8 @@ log = getLogger(__name__)
 
 class LoginForm(FlaskForm):
 
-    username = StringField('Username', validators=[InputRequired('Имя пользователя требуется.')])
-    password = PasswordField('Password', validators=[InputRequired('Необходим пароль.')])
+    username = StringField('Имя пользователя', validators=[InputRequired('Требуется имя пользователя.')])
+    password = PasswordField('Пароль', validators=[InputRequired('Необходим пароль.')])
 
     def validate_username(self, username):
         user = UserInfo.query.filter_by(username=username.data).first()
@@ -100,7 +100,7 @@ class RegisterForm(FlaskForm):
 
     fullname = StringField('ФИО', validators=[InputRequired('Требуется ФИО')])
     username = StringField('Имя пользователя', validators=[InputRequired('Требуется имя пользователя')])
-    password = PasswordField('пароль', validators=[InputRequired('Требуется пароль')])
+    password = PasswordField('Пароль', validators=[InputRequired('Требуется пароль')])
     password1 = PasswordField('Подтвердить пароль', validators=[InputRequired('Подтвердить пароль')])
     email = StringField('Эл. адрес', validators=[InputRequired(), Email(message='Требуется эл. адрес')])
 
