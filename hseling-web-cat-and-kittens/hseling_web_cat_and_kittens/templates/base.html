@@ -42,8 +42,8 @@
                         {% if current_user.is_authenticated %}
                         <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('logout') }}">Выйти</a>
                         {% else %}
-                        <a class="btn btn-sm btn-outline-secondary mr-3" href="{{ url_for('register') }}">Подписаться</a>
-                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('login') }}">авторизоваться</a>
+                        <a class="btn btn-sm btn-outline-secondary mr-3" href="{{ url_for('register') }}">Регистрация</a>
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('login') }}">Войти</a>
                         {% endif %}
                     </div>
                 </div>
