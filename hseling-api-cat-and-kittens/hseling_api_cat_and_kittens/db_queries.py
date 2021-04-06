@@ -479,3 +479,187 @@ def collocation_search(search_token, search_metric, search_domain):
 
     else:
         return ['']
+
+def collocation_search_test(search_token, search_metric, search_domain, ngrams=2):
+    """
+    produces list of most common bigram according to the first collocate (input by user);
+    search_token : user input word
+    search_metric : user selected metric for result sorting
+    search_domain : user selected domain of search
+    """
+    cur = CONN.cursor()
+
+    domain_name2id = get_domain_dictionary()
+
+    if search_metric in ['frequency', 'pmi', 'logdice', 't_score']:
+
+        domain = domain_name2id.get(search_domain)
+
+        if domain:
+            frequency = f'freq{domain}'
+            if search_metric == 'frequency':
+                orderby = f'd{domain}_freq'
+            elif search_metric == 'pmi':
+                orderby = f'd{domain}_pmi'
+            elif search_metric == 'logdice':
+                orderby = f'd{domain}_logdice'
+            else:
+                orderby = f'd{domain}_tsc'
+
+        else:   
+            frequency = 'freq_all'
+            if search_metric == 'frequency':
+                orderby = 'raw_frequency'
+            elif search_metric == 'pmi':
+                orderby = 'pmi'
+            elif search_metric == 'logdice':
+                orderby = 'tscore'
+            else:
+                orderby = 'logdice'
+
+        ## UNIGRAMS
+        stmt = """SELECT unigram, id_unigram, """ + frequency + """ FROM  
+                (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM unigrams t,      
+                (SELECT @row_num:=0) counter ORDER BY """ + frequency + """) temp 
+                WHERE temp.original_cat = 1
+                AND temp.row_num >= ROUND (.95* @row_num) 
+                AND temp.unigram = %s
+                ORDER BY """ + frequency + """ DESC;"""
+
+        cur.execute(stmt, (search_token, ))
+        result = cur.fetchall()
+        unigrams = ', '.join([line[0] for line in result])
+
+        ## BIGRAMS 
+        if ngrams == 2:
+            stmt = """SELECT uni1.unigram, uni2.unigram FROM 
+                    (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM 2grams t, 
+                        (SELECT @row_num:=0) counter  
+                        WHERE t.wordform_1 in (""" + unigrams + """) 
+                        OR t.wordform_2 in (""" + unigrams + """)
+                        ORDER BY """ + orderby + """) 
+                    temp 
+                    INNER JOIN unigrams uni1 ON uni1.id_unigram = wordform_1
+                    INNER JOIN unigrams uni2 ON uni2.id_unigram = wordform_2
+                    WHERE temp.row_num >= ROUND (.995* @row_num)
+                    AND uni1.original_cat = 1
+                    AND uni2.original_cat = 1
+                    ORDER BY """ + orderby + """ DESC;"""
+            cur.execute(stmt)
+            row_headers = [x[0] for x in cur.description]
+            rv = cur.fetchall()
+
+        ## TRIGRAMS
+        elif ngrams == 3:
+            stmt = """SELECT uni1.unigram, uni2.unigram, uni3.unigram FROM 
+                      (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM (
+                          SELECT w1, w2, w3, """ + orderby + """ 
+                          FROM 3grams_tokens 
+                          JOIN 3grams ON 3grams.id_trigram = 3grams_tokens.id_trigram 
+                          WHERE w1 in (""" + unigrams + """)
+                          OR w2 in (""" + unigrams + """)
+                          OR w3 in (""" + unigrams + """)
+                          AND original_cat = 1 
+                      ) t, 
+                          (SELECT @row_num:=0) counter ORDER BY """ + orderby + """) 
+                      temp 
+                      INNER JOIN unigrams uni1 ON uni1.id_unigram = w1
+                      INNER JOIN unigrams uni2 ON uni2.id_unigram = w2
+                      INNER JOIN unigrams uni3 ON uni3.id_unigram = w3
+                      WHERE temp.row_num >= ROUND (.995* @row_num)
+                      ORDER BY """ + orderby + """ DESC;"""
+            cur.execute(stmt)
+            row_headers = [x[0] for x in cur.description]
+            rv = cur.fetchall()
+
+        # 4GRAMS
+        elif ngrams == 4:
+            stmt = """SELECT uni1.unigram, uni2.unigram, uni3.unigram, uni4.unigram, """ + orderby + """ FROM 
+                      (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM (
+                          SELECT w1, w2, w3, w4, """ + orderby + """ 
+                          FROM 4grams_tokens
+                          JOIN 4grams ON 4grams.id_4gram = 4grams_tokens.id_4gram 
+                          WHERE w1 in (""" + unigrams + """)
+                          OR w2 in (""" + unigrams + """)
+                          OR w3 in (""" + unigrams + """)
+                          OR w4 in (""" + unigrams + """)
+                          AND original_cat = 1
+                      ) t, 
+                          (SELECT @row_num:=0) counter ORDER BY """ + orderby + """) 
+                      temp 
+                      INNER JOIN unigrams uni1 ON uni1.id_unigram = w1
+                      INNER JOIN unigrams uni2 ON uni2.id_unigram = w2
+                      INNER JOIN unigrams uni3 ON uni3.id_unigram = w3
+                      INNER JOIN unigrams uni4 ON uni4.id_unigram = w4
+                      WHERE temp.row_num >= ROUND (.995* @row_num)
+                      ORDER BY """ + orderby + """ DESC;"""
+            cur.execute(stmt)
+            row_headers = [x[0] for x in cur.description]
+            rv = cur.fetchall()
+
+        ## 5GRAMS
+        elif ngrams == 5:
+            stmt = """SELECT uni1.unigram, uni2.unigram, uni3.unigram, 
+                      uni4.unigram, uni5.unigram, """ + orderby + """ FROM 
+                      (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM (
+                          SELECT w1, w2, w3, w4, w5, """ + orderby + """ 
+                          FROM 5grams_tokens
+                          JOIN 5grams ON 5grams.id_5gram = 5grams_tokens.id_5gram 
+                          WHERE w1 in (""" + unigrams + """)
+                          OR w2 in (""" + unigrams + """)
+                          OR w3 in (""" + unigrams + """)
+                          OR w4 in (""" + unigrams + """)
+                          OR w5 in (""" + unigrams + """)
+                          AND original_cat = 1
+                      ) t, 
+                          (SELECT @row_num:=0) counter ORDER BY """ + orderby + """) 
+                      temp 
+                      INNER JOIN unigrams uni1 ON uni1.id_unigram = w1
+                      INNER JOIN unigrams uni2 ON uni2.id_unigram = w2
+                      INNER JOIN unigrams uni3 ON uni3.id_unigram = w3
+                      INNER JOIN unigrams uni4 ON uni4.id_unigram = w4
+                      INNER JOIN unigrams uni5 ON uni5.id_unigram = w5
+                      WHERE temp.row_num >= ROUND (.995* @row_num)
+                      ORDER BY """ + orderby + """ DESC;"""
+            cur.execute(stmt)
+            row_headers = [x[0] for x in cur.description]
+            rv = cur.fetchall()
+
+        elif ngrams == 6:
+            stmt = """SELECT uni1.unigram, uni2.unigram, uni3.unigram,
+                      uni4.unigram, uni5.unigram, uni6.unigram, """ + orderby + """ FROM 
+                      (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM (
+                          SELECT w1, w2, w3, w4, w5, w6, """ + orderby + """ 
+                          FROM 6grams_tokens
+                          JOIN 6grams ON 6grams.id_6gram = 6grams_tokens.id_6gram 
+                          WHERE w1 in (""" + unigrams + """)
+                          OR w2 in (""" + unigrams + """)
+                          OR w3 in (""" + unigrams + """)
+                          OR w4 in (""" + unigrams + """)
+                          OR w5 in (""" + unigrams + """)
+                          OR w6 in (""" + unigrams + """)
+                          AND original_cat = 1
+                      ) t, 
+                          (SELECT @row_num:=0) counter ORDER BY """ + orderby + """) 
+                      temp 
+                      INNER JOIN unigrams uni1 ON uni1.id_unigram = w1
+                      INNER JOIN unigrams uni2 ON uni2.id_unigram = w2
+                      INNER JOIN unigrams uni3 ON uni3.id_unigram = w3
+                      INNER JOIN unigrams uni4 ON uni4.id_unigram = w4
+                      INNER JOIN unigrams uni5 ON uni5.id_unigram = w5
+                      INNER JOIN unigrams uni6 ON uni6.id_unigram = w6
+                      WHERE temp.row_num >= ROUND (.995* @row_num)
+                      ORDER BY """ + orderby + """ DESC;"""
+            cur.execute(stmt)
+            row_headers = [x[0] for x in cur.description]
+            rv = cur.fetchall()
+        else: 
+            return ['']
+
+        if row_headers and rv:   
+            json_data = []
+            for result in rv:
+                json_data.append(dict(zip(row_headers, result)))
+                return json_data
+        else:
+            return ['']
