@@ -391,8 +391,11 @@ def collocations():
             search_metric = boilerplate.metric_converter(search_metric)
             search_domain = details['search-domain']
             search_domain = boilerplate.domain_to_index(search_domain)
+            search_ngrams = details['search-ngrams']
+            search_ngrams = boilerplate.ngrams_converter(search_ngrams)
             api_endpoint = get_server_endpoint() + "/collocation_search?token=" + search_token + "&metric="
             api_endpoint += search_metric + "&domain=" + str(search_domain)
+            api_endpoint += "&ngrams=" + str(search_ngrams)
             result = requests.get(api_endpoint).content
             result = json.loads(result)
             result = result["values"]

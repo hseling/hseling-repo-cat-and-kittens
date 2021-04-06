@@ -30,8 +30,8 @@ def get_id2domain_dictionary():
     cur = CONN.cursor()
     cur.execute("SELECT * FROM domains;")
     domain_list = cur.fetchall()
-    domain_name2id = {row[0] : str(row[1]) for row in domain_list}
-    return domain_name2id
+    domain_id2name = {row[0] : str(row[1]) for row in domain_list}
+    return domain_id2name
 
 def split_morph_pos(morph):
     """
@@ -426,7 +426,7 @@ def collocation_search(search_token, search_metric, search_domain):
     search_metric : user selected metric for result sorting
     search_domain : user selected domain of search
     """
-
+    
     domain_name2id = get_domain_dictionary()
 
     if search_metric in ['frequency', 'pmi', 'logdice', 't_score']:
@@ -480,7 +480,7 @@ def collocation_search(search_token, search_metric, search_domain):
     else:
         return ['']
 
-def collocation_search_test(search_token, search_metric, search_domain, ngrams=2):
+def collocation_search_test(search_token, search_metric, search_domain, ngrams):
     """
     produces list of most common bigram according to the first collocate (input by user);
     search_token : user input word
@@ -489,6 +489,11 @@ def collocation_search_test(search_token, search_metric, search_domain, ngrams=2
     """
     cur = CONN.cursor()
 
+    if ngrams:
+        ngrams = int(ngrams)
+    else:
+        ngrams = 2
+    print(search_domain)
     domain_name2id = get_domain_dictionary()
 
     if search_metric in ['frequency', 'pmi', 'logdice', 't_score']:
@@ -518,17 +523,16 @@ def collocation_search_test(search_token, search_metric, search_domain, ngrams=2
                 orderby = 'logdice'
 
         ## UNIGRAMS
-        stmt = """SELECT unigram, id_unigram, """ + frequency + """ FROM  
-                (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM unigrams t,      
-                (SELECT @row_num:=0) counter ORDER BY """ + frequency + """) temp 
-                WHERE temp.original_cat = 1
-                AND temp.row_num >= ROUND (.95* @row_num) 
-                AND temp.unigram = %s
-                ORDER BY """ + frequency + """ DESC;"""
-
+        stmt = """SELECT id_unigram FROM  
+        (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM unigrams t,      
+        (SELECT @row_num:=0) counter ORDER BY """ + frequency + """) temp 
+        WHERE temp.original_cat = 1
+        AND temp.row_num >= ROUND (.95* @row_num) 
+        AND temp.unigram = %s
+        ORDER BY """ + frequency + """ DESC;"""
         cur.execute(stmt, (search_token, ))
         result = cur.fetchall()
-        unigrams = ', '.join([line[0] for line in result])
+        unigrams = ', '.join([str(line[0]) for line in result])
 
         ## BIGRAMS 
         if ngrams == 2:
@@ -541,13 +545,14 @@ def collocation_search_test(search_token, search_metric, search_domain, ngrams=2
                     temp 
                     INNER JOIN unigrams uni1 ON uni1.id_unigram = wordform_1
                     INNER JOIN unigrams uni2 ON uni2.id_unigram = wordform_2
-                    WHERE temp.row_num >= ROUND (.995* @row_num)
+                    WHERE temp.row_num >= ROUND (.97* @row_num)
                     AND uni1.original_cat = 1
                     AND uni2.original_cat = 1
                     ORDER BY """ + orderby + """ DESC;"""
             cur.execute(stmt)
-            row_headers = [x[0] for x in cur.description]
+            row_headers = ["Биграммы"]
             rv = cur.fetchall()
+            res = [f"{str(r[0])} {str(r[1])}" for r in rv]
 
         ## TRIGRAMS
         elif ngrams == 3:
@@ -566,11 +571,12 @@ def collocation_search_test(search_token, search_metric, search_domain, ngrams=2
                       INNER JOIN unigrams uni1 ON uni1.id_unigram = w1
                       INNER JOIN unigrams uni2 ON uni2.id_unigram = w2
                       INNER JOIN unigrams uni3 ON uni3.id_unigram = w3
-                      WHERE temp.row_num >= ROUND (.995* @row_num)
+                      WHERE temp.row_num >= ROUND (.95* @row_num)
                       ORDER BY """ + orderby + """ DESC;"""
             cur.execute(stmt)
-            row_headers = [x[0] for x in cur.description]
+            row_headers = ["Триграммы"]
             rv = cur.fetchall()
+            res = [f"{str(r[0])} {str(r[1])} {str(r[2])}" for r in rv]
 
         # 4GRAMS
         elif ngrams == 4:
@@ -591,11 +597,12 @@ def collocation_search_test(search_token, search_metric, search_domain, ngrams=2
                       INNER JOIN unigrams uni2 ON uni2.id_unigram = w2
                       INNER JOIN unigrams uni3 ON uni3.id_unigram = w3
                       INNER JOIN unigrams uni4 ON uni4.id_unigram = w4
-                      WHERE temp.row_num >= ROUND (.995* @row_num)
+                      WHERE temp.row_num >= ROUND (.95* @row_num)
                       ORDER BY """ + orderby + """ DESC;"""
             cur.execute(stmt)
-            row_headers = [x[0] for x in cur.description]
+            row_headers = ["Четырёхграммы"]
             rv = cur.fetchall()
+            res = [f"{str(r[0])} {str(r[1])} {str(r[2])} {str(r[3])}" for r in rv]
 
         ## 5GRAMS
         elif ngrams == 5:
@@ -619,11 +626,12 @@ def collocation_search_test(search_token, search_metric, search_domain, ngrams=2
                       INNER JOIN unigrams uni3 ON uni3.id_unigram = w3
                       INNER JOIN unigrams uni4 ON uni4.id_unigram = w4
                       INNER JOIN unigrams uni5 ON uni5.id_unigram = w5
-                      WHERE temp.row_num >= ROUND (.995* @row_num)
+                      WHERE temp.row_num >= ROUND (.95* @row_num)
                       ORDER BY """ + orderby + """ DESC;"""
             cur.execute(stmt)
-            row_headers = [x[0] for x in cur.description]
+            row_headers = ["Пятиграммы"]
             rv = cur.fetchall()
+            res = [f"{str(r[0])} {str(r[1])} {str(r[2])} {str(r[3])} {str(r[4])}" for r in rv]
 
         elif ngrams == 6:
             stmt = """SELECT uni1.unigram, uni2.unigram, uni3.unigram,
@@ -648,18 +656,23 @@ def collocation_search_test(search_token, search_metric, search_domain, ngrams=2
                       INNER JOIN unigrams uni4 ON uni4.id_unigram = w4
                       INNER JOIN unigrams uni5 ON uni5.id_unigram = w5
                       INNER JOIN unigrams uni6 ON uni6.id_unigram = w6
-                      WHERE temp.row_num >= ROUND (.995* @row_num)
+                      WHERE temp.row_num >= ROUND (.95* @row_num)
                       ORDER BY """ + orderby + """ DESC;"""
             cur.execute(stmt)
-            row_headers = [x[0] for x in cur.description]
+            row_headers = ["Шестиграммы"]
             rv = cur.fetchall()
+            res = [f"{str(r[0])} {str(r[1])} {str(r[2])} {str(r[3])} {str(r[4])} {str(r[5])}" for r in rv]
         else: 
             return ['']
 
-        if row_headers and rv:   
+        if row_headers and res:
+            print("got some result")
+            print(row_headers)
             json_data = []
-            for result in rv:
-                json_data.append(dict(zip(row_headers, result)))
-                return json_data
+            for r in res:
+                json_data.append(dict(zip(row_headers, [r])))
+            return json_data
         else:
+            return ['']
+    else:
             return ['']

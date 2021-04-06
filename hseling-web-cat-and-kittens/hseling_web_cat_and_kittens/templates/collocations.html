@@ -17,7 +17,7 @@
   <div>
     <div class="collocations-cat">
       <div class="collocations-description">
-        <p>Списки устойчивых сочетаний включают в себя словосочетания длиной двух токенов, извлечённые из
+        <p>Списки устойчивых сочетаний включают в себя словосочетания длиной от двух до шести токенов, извлечённые из
           текстов Корпуса. Для каждого сочетания посчитаны следующие метрики для определения степени его устойчивости в
           академической речи:</p>
       </div>
@@ -39,22 +39,32 @@
 
           <div class="domain">
             <select class="form-control" name="search-domain">
+              <option>Весь корпус</option>
               <option>Лингвистика</option>
               <option>Социология</option>
               <option>История</option>
               <option>Юриспруденция</option>
               <option>Психология и педагогика</option>
               <option>Экономика</option>
-              <option>Весь корпус</option>
             </select>
           </div>
 
           <div class="domain">
             <select class="form-control" name="search-metric">
+              <option>Frequency</option>
               <option>PMI</option>
               <option>t-score</option>
               <option>logdice</option>
-              <option>Frequency</option>
+            </select>
+          </div>
+
+          <div class="domain">
+            <select class="form-control" name="search-ngrams">
+              <option>Биграммы</option>
+              <option>Триграммы</option>
+              <option>Четырехграммы</option>
+              <option>Пятиграммы</option>
+              <option>Шестиграммы</option>
             </select>
           </div>
 

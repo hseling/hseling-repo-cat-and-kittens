@@ -196,7 +196,8 @@ def bigram_search_endpoint():
     token = request.args.get("token")
     metric = request.args.get("metric")
     domain = request.args.get("domain")
-    return jsonify({"values": db_queries.collocation_search(token, metric, domain)})
+    ngrams = request.args.get("ngrams")
+    return jsonify({"values": db_queries.collocation_search_test(token, metric, domain, ngrams)})
 
 @app.route("/api/single_token_search")
 def single_token_search_endpoint():
