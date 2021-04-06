@@ -545,7 +545,7 @@ def collocation_search_test(search_token, search_metric, search_domain, ngrams):
                     temp 
                     INNER JOIN unigrams uni1 ON uni1.id_unigram = wordform_1
                     INNER JOIN unigrams uni2 ON uni2.id_unigram = wordform_2
-                    WHERE temp.row_num >= ROUND (.97* @row_num)
+                    WHERE temp.row_num >= ROUND (.95* @row_num)
                     AND uni1.original_cat = 1
                     AND uni2.original_cat = 1
                     ORDER BY """ + orderby + """ DESC;"""

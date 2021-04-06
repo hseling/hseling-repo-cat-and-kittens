@@ -27,7 +27,7 @@ def domain_to_index(search_domain):
     return domain_token
 
 def get_metric_dict():
-    metric_dict = {'PMI' : 'pmi', 't-score' : 't_score', 'logdice' : 'logdice', 'Frequency' : 'frequency'}
+    metric_dict = {'PMI' : 'pmi', 't-score' : 't_score', 'logdice' : 'logdice', 'Частота' : 'frequency'}
     return metric_dict
 
 def metric_converter(search_metric):
