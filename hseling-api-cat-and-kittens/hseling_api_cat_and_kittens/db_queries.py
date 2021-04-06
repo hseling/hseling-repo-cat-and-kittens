@@ -26,6 +26,13 @@ def get_domain_dictionary():
     domain_name2id = {row[1] : str(row[0]) for row in domain_list}
     return domain_name2id
 
+def get_id2domain_dictionary():
+    cur = CONN.cursor()
+    cur.execute("SELECT * FROM domains;")
+    domain_list = cur.fetchall()
+    domain_name2id = {row[0] : str(row[1]) for row in domain_list}
+    return domain_name2id
+
 def split_morph_pos(morph):
     """
     splits morph into the 'pos' and 'morph' strings for db search
@@ -56,6 +63,27 @@ def is_lemma_string(lemma):
     else:
         return ""
 
+def get_extreme(extreme, range_minimum, range_maximum):
+    """
+    extreme : should be min or max
+    range_minimum::int : minimum value you want your extreme to be 
+    range_maximum::int : maximum value you want your extreme to be      
+    """
+    if isinstance(extreme, str):
+        if extreme == "":
+            extreme = range_minimum
+        else:
+            extreme = int(extreme)
+            if extreme >= range_minimum and extreme <= range_maximum:
+                extreme = int(extreme)
+            elif extreme > range_maximum:
+                extreme = range_maximum
+            else:
+                extreme = range_minimum        
+    else:
+        extreme = range_minimum
+    return extreme
+
 def get_values(lemma1, lemma2, morph1, morph2, min_, max_):
 
     lemma1 = is_lemma_string(lemma1)
@@ -73,56 +101,10 @@ def get_values(lemma1, lemma2, morph1, morph2, min_, max_):
     # else:
     #     syntrole = "_"
 
-    if isinstance(min_, str):
-        if min_ == "":
-            min_ = 0
-        else:
-            min_ = int(min_)
-            if min_ > -1 and min_ < 5:
-                min_ = int(min_)
-            elif min_ > 4:
-                min_ = 4
-            else:
-                min_ = 0        
-    else:
-        min_ = 0
-
-    if isinstance(max_, str):
-        if max_ == "":
-            max_ = 1
-        else:
-            max_ = int(max_)
-            if max_ > 0 and max_ < 6:
-                max_ = int(max_)
-            elif max_ != "" and max_ > 5:
-                max_ = 5
-            else:
-                max_ = 1        
-    else:
-        max_ = 1 
+    min_ = get_extreme(min_, 1, 4)
+    max_ = get_extreme(max_, 1, 5)
 
     return lemma1, lemma2, pos1, pos2, morph1, morph2, min_, max_
-
-def freq_search(search_token):
-    '''
-    get the best fitting bigram
-    search_token : word input from user
-    '''
-    frequency = 'freq_all'
-    cur = CONN.cursor()
-    stmt = """SELECT unigrams.""" + frequency + """ AS frequency, lemmas.lemma AS lemma
-    FROM (SELECT * FROM unigrams WHERE original_cat = 1) AS unigrams
-    JOIN lemmas ON unigrams.lemma = lemmas.id_lemmas
-    WHERE unigrams.unigram = %(src_token)s
-    ORDER BY frequency DESC;"""
-    cur.execute(stmt, {'src_token' : search_token})
-    row_headers = [x[0] for x in cur.description]
-    rv = cur.fetchall()
-    json_data = []
-    for result in rv:
-        json_data.append(dict(zip(row_headers, result)))
-    
-    return json_data
 
 # def check_syntrole(result, word, syntrole):
 
@@ -150,40 +132,45 @@ def freq_search(search_token):
 #         for line in result:
 #             result_dict = {"id_sent" : word["id_sent"], "id_text" : word["id_text"], "word1" : word["id_word"], "word2" : line[0]}
 #             word1_word2_result.append(result_dict)
-    return word1_word2_result
+#    return word1_word2_result
 
 def generate_sent(result):
     """
     result : list of tuples,
     where tuple position are:
-    1- word1_id, 2- word2_id, 3-sentence_id, 4- text_id
+    0- list of words::(str or int) to boldify, 1- sentence_id::str, 2- text_id::str, 
+    3- author::str, 4- year::str, 5- title::str, 6- id_domain::int
     """
     cur = CONN.cursor()
+    id2domain = get_id2domain_dictionary()
+    sents = list()
     for result_tuple in result:
 
         ## MAIN PARAGRAPH
-        stmt = f"SELECT id_word, word FROM words WHERE id_sent = {result_tuple[2]} AND id_text = {result_tuple[3]};"
+        stmt = f"SELECT id_word, word FROM words WHERE id_sent = {result_tuple[1]} AND id_text = {result_tuple[2]};"
         cur.execute(stmt)
         main_paragraph = cur.fetchall()
-        main_paragraph = stringify_sent(main_paragraph, [result_tuple[0], result_tuple[1], ])
+        main_paragraph = stringify_sent(main_paragraph, result_tuple[0])
 
         ## 1st PARAGRAPH
-        stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(result_tuple[2]) - 1)} AND id_text = {result_tuple[3]};"
+        stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(result_tuple[1]) - 1)} AND id_text = {result_tuple[2]};"
         cur.execute(stmt)
         first_paragraph = cur.fetchall()
-        first_paragraph = stringify_sent(first_paragraph, [result_tuple[0], result_tuple[1], ])
+        first_paragraph = stringify_sent(first_paragraph, result_tuple[0])
 
         ## LAST PARAGRAPH
-        stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(result_tuple[2]) + 1)} AND id_text = {result_tuple[3]};"
+        stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(result_tuple[1]) + 1)} AND id_text = {result_tuple[2]};"
         cur.execute(stmt)
         last_paragraph = cur.fetchall()
-        last_paragraph = stringify_sent(last_paragraph, [result_tuple[0], result_tuple[1], ])
+        last_paragraph = stringify_sent(last_paragraph, result_tuple[0])
 
         ## REFERENCE
-        reference = f"{result_tuple[4]}, {result_tuple[5]}, {result_tuple[6]}"
+        reference = f"{result_tuple[3]}, {result_tuple[4]}, {result_tuple[5]} - Домен: {id2domain.get(result_tuple[6])}"
         
         sent = (first_paragraph, main_paragraph, last_paragraph, reference)
-        return sent
+        if sent:
+            sents.append(sent)
+    return sents
 
 def get_words4lemma(lemma, morph, pos, frequency):
     cur = CONN.cursor()
@@ -195,10 +182,10 @@ def get_words4lemma(lemma, morph, pos, frequency):
                                     (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM unigrams t,      
                                     (SELECT @row_num:=0) counter ORDER BY """ + frequency + """) temp
                                     INNER JOIN unitags tags ON temp.id_unigram = tags.id_unigram
-                                    WHERE temp.row_num >= ROUND (.95* @row_num)
+                                    WHERE temp.original_cat = 1
+                                    AND temp.row_num >= ROUND (.95* @row_num) 
                                     AND temp.unigram = %s
-                                    AND temp.morph LIKE '%{}%' 
-                                    AND temp.original_cat = 1
+                                    AND temp.morph LIKE '%{}%'
                                     ORDER BY """ + frequency + """ DESC
                                     ) AS tab1
                                         INNER JOIN pos pos ON tab1.pos = pos.pos """
@@ -211,16 +198,15 @@ def get_words4lemma(lemma, morph, pos, frequency):
         print(result)
         for id_unigram in result:
 
-            sub_stmt = """SELECT w.id_word, w.id_sent, w.id_text, meta.author, meta.year, meta.title FROM 
+            sub_stmt = """SELECT w.id_word, w.id_sent, w.id_text, meta.author, meta.year, meta.title, meta.id_domain FROM 
                     (SELECT id_sent, id_word, id_text
                     FROM words  
                     WHERE id_unigram = """ + str(id_unigram[0]) + """) AS w 
                         JOIN metadata meta ON w.id_text = meta.id_text
                     ORDER BY RAND()
-                    LIMIT 10;"""
+                    LIMIT 50;"""
             cur.execute(sub_stmt)
             result = cur.fetchall()
-            # word_id_list.extend([{"id_word" : word[0], "id_sent" : word[1], "id_text" : word[2]} for word in result])
         return result
     else:
         print("NO LEMMA")
@@ -236,7 +222,7 @@ def get_frequency(search_domain):
         return 'freq_all'
 
 def lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain):
-    
+
     lemma1, lemma2, pos1, pos2, morph1, morph2, min_, max_ = get_values(lemma1, lemma2, morph1, morph2, min_, max_)
 
     cur = CONN.cursor()
@@ -263,6 +249,7 @@ def lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain):
                     author = str(word1[3])
                     year = str(word1[4])
                     title = str(word1[5])
+                    id_domain = word1[6]
                     if id_sent == id_sent2 and word2_id >= word1_id + min_ and word2_id <= word1_id + max_:
                         i += 1
                         stmt = """SELECT word_tab.id_word FROM
@@ -272,21 +259,20 @@ def lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain):
                             AND id_text = {}) AS word_tab
                                 INNER JOIN unigrams uni ON word_tab.id_unigram = uni.id_unigram
                                 INNER JOIN unitags tags ON uni.id_unigram = tags.id_unigram
-                                INNER JOIN pos pos ON tags.pos = pos.pos
-                            WHERE morph LIKE '%{}%'
+                                INNER JOIN pos pos ON tags.pos = pos.pos 
+                            WHERE uni.original_cat = 1 
+                            AND morph LIKE '%{}%'
                             AND uni.unigram <> "" """
                         if pos2:
                             stmt += f"AND pos.id_pos = {pos2} "
                         stmt += "ORDER BY uni." + frequency + " DESC LIMIT 50;"
-                        # stmt += "LIMIT 10;"
                         stmt_word1 = stmt.format(str(word1_id + min_), str(word1_id + max_), id_sent, id_text, pos2, morph2)
                         cur.execute(stmt_word1)
                         result = cur.fetchall()
                         # word1_word2_result = check_syntrole(result, word1, syntrole)
-                        word1_word2_result = [(word1_id, word2_id[0], id_sent, id_text, author, year, title, ) for word2_id in result]
-                        sent = generate_sent(word1_word2_result)
-                        if sent:
-                            sent_list.append(sent)
+                        word1_word2_result = [([word1_id, word2_id[0], ], id_sent, id_text, author, year, title, id_domain, ) for word2_id in result]
+                        sents = generate_sent(word1_word2_result)
+                        sent_list.extend(sents)
                 else:
                     break
 
@@ -299,6 +285,7 @@ def lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain):
             author = str(word1[3])
             year = str(word1[4])
             title = str(word1[5])
+            id_domain = word1[6]
             stmt = """SELECT word_tab.id_word, uni.""" + frequency + """ FROM
                             (SELECT id_word, id_unigram FROM words WHERE id_word >= {}
                             AND id_word <= {}
@@ -307,20 +294,19 @@ def lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain):
                                 INNER JOIN unigrams uni ON word_tab.id_unigram = uni.id_unigram
                                 INNER JOIN unitags tags ON uni.id_unigram = tags.id_unigram
                                 INNER JOIN pos pos ON tags.pos = pos.pos
-                            WHERE morph LIKE '%{}%'
-                            AND uni.unigram <> "" """
+                            WHERE uni.original_cat = 1
+                            AND uni.unigram <> "" 
+                            AND morph LIKE '%{}%' """
             if pos2:
                 stmt += f"AND pos.id_pos = {pos2} "
             stmt += "ORDER BY uni." + frequency + " DESC LIMIT 100;"
-            # stmt += "LIMIT 10;"
             stmt_word1 = stmt.format(str(word1_id + min_), str(word1_id + max_), id_sent, id_text, morph2)
             cur.execute(stmt_word1)
             result = cur.fetchall()
             # word1_word2_result = check_syntrole(result, word1, syntrole)
-            word1_word2_result = [(word1_id, word2_id[0], id_sent, id_text, author, year, title, ) for word2_id in result]
-            sent = generate_sent(word1_word2_result)
-            if sent:
-                sent_list.append(sent)
+            word1_word2_result = [([word1_id, word2_id[0], ], id_sent, id_text, author, year, title, id_domain ) for word2_id in result]
+            sents = generate_sent(word1_word2_result)
+            sent_list.extend(sents)
 
     # INNER JOIN unigrams uni ON word_tab.id_unigram = uni.id_unigram
     elif word2_id_list and not lemma1:
@@ -331,6 +317,7 @@ def lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain):
             author = str(word2[3])
             year = str(word2[4])
             title = str(word2[5])
+            id_domain = word2[6]
             stmt = """SELECT word_tab.id_word FROM
                             (SELECT id_word, id_unigram FROM words WHERE id_word >= {}
                             AND id_word <= {}
@@ -339,20 +326,19 @@ def lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain):
                                 INNER JOIN unigrams uni ON word_tab.id_unigram = uni.id_unigram
                                 INNER JOIN unitags tags ON uni.id_unigram = tags.id_unigram
                                 INNER JOIN pos pos ON tags.pos = pos.pos
-                            WHERE morph LIKE '%{}%'
-                            AND uni.unigram <> "" """
+                            WHERE uni.original_cat = 1
+                            AND uni.unigram <> "" 
+                            AND morph LIKE '%{}%' """
             if pos1:
                 stmt += f"AND pos.id_pos = {pos1} "
             stmt += "ORDER BY uni." + frequency + " DESC LIMIT 100;"
-            # stmt += "LIMIT 10;"
-            stmt_word2 = stmt.format(str(word2_id - max_), str(word2_id + min_), id_sent, id_text, morph1)
+            stmt_word2 = stmt.format(str(word2_id - max_), str(word2_id - min_), id_sent, id_text, morph1)
             cur.execute(stmt_word2)
             result = cur.fetchall()
             # word1_word2_result = check_syntrole(result, word2, syntrole)
-            word1_word2_result = [(word1_id[0], word2_id, id_sent, id_text, author, year, title, ) for word1_id in result]
-            sent = generate_sent(word1_word2_result)
-            if sent:
-                sent_list.append(sent)
+            word1_word2_result = [([word1_id[0], word2_id, ], id_sent, id_text, author, year, title, id_domain, ) for word1_id in result]
+            sents = generate_sent(word1_word2_result)
+            sent_list.extend(sents)
     else:
         sent_list.append((" --- ", "Введите хотя бы одно слово", " --- ", ""))
         row_headers = ["Повторите поиск"]
@@ -376,9 +362,9 @@ def single_token_search(search_token, search_domain):
         stmt = """SELECT unigram, id_unigram, """ + frequency + """ FROM  
         (SELECT t.*,  @row_num :=@row_num + 1 AS row_num FROM unigrams t,      
         (SELECT @row_num:=0) counter ORDER BY """ + frequency + """) temp 
-        WHERE temp.row_num >= ROUND (.95* @row_num) 
+        WHERE temp.original_cat = 1
+        AND temp.row_num >= ROUND (.95* @row_num) 
         AND temp.unigram = %s
-        AND temp.original_cat = 1
         ORDER BY """ + frequency + """ DESC;"""
 
         cur.execute(stmt, (search_token, ))
@@ -394,7 +380,7 @@ def single_token_search(search_token, search_domain):
         full_list_sentences = list()
         for id_unigram in dict_unigram_sent.keys():
 
-            stmt = """SELECT w.id_sent, w.id_word, w.id_text, meta.author, meta.year, meta.title FROM 
+            stmt = """SELECT w.id_word, w.id_sent, w.id_text, meta.author, meta.year, meta.title, meta.id_domain FROM 
                     (SELECT id_sent, id_word, id_text
                     FROM words  
                     WHERE id_unigram = """ + str(id_unigram) + """) AS w 
@@ -403,45 +389,14 @@ def single_token_search(search_token, search_domain):
                     LIMIT 5;"""
             cur.execute(stmt)
             list_id_sent = cur.fetchall()
+            list_id_sent = [([sent[0], ], sent[1], sent[2], sent[3], sent[4], sent[5], sent[6], ) for sent in list_id_sent]
             full_list_sentences.extend(list_id_sent)
-
-        sent_list = list()
-
-        for example in full_list_sentences:
-            id_sent = str(example[0])
-            id_token = example[1]
-            id_text = str(example[2])
-            author = str(example[3])
-            year = str(example[4])
-            title = str(example[5])
-
-            ## MAIN PARAGRAPH
-            stmt = f"SELECT id_word, word FROM words WHERE id_sent = {id_sent} AND id_text = {id_text};"
-            cur.execute(stmt)
-            main_paragraph = cur.fetchall()
-            main_paragraph = stringify_sent(main_paragraph, [id_token, ])
-
-            ## 1st PARAGRAPH
-            stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(id_sent) - 1)} AND id_text = {id_text};"
-            cur.execute(stmt)
-            first_paragraph = cur.fetchall()
-            first_paragraph = stringify_sent(first_paragraph, [id_token, ])
-
-            ## LAST PARAGRAPH
-            stmt = f"SELECT id_word, word FROM words WHERE id_sent = {str(int(id_sent) + 1)} AND id_text = {id_text};"
-            cur.execute(stmt)
-            last_paragraph = cur.fetchall()
-            last_paragraph = stringify_sent(last_paragraph, [id_token, ])
-
-            ## REFERENCE
-            reference = f"{author}, {year}, {title}"
             
-            sent = (first_paragraph, main_paragraph, last_paragraph, reference)
-            sent_list.append(sent)
+        sents = generate_sent(full_list_sentences)
 
         row_headers = [f"Примерные предложения, количестко найденных текстов: {text_count} (мы показываем только их часть)"]
         json_data = []
-        for sent in sent_list:
+        for sent in sents:
             json_data.append(dict(zip(row_headers, [sent])))
         
         return json_data
@@ -508,7 +463,7 @@ def collocation_search(search_token, search_metric, search_domain):
         2grams.''' + logdice + ''' as logdice
         FROM unigrams
         JOIN 2grams ON unigrams.id_unigram = 2grams.wordform_1 
-        WHERE unigrams.unigram = %s AND unigrams.original_cat = 1) as tab2
+        WHERE unigrams.original_cat = 1 AND unigrams.unigram = %s) as tab2
         ON tab2.collocate_id = tab1.id_unigram
         ORDER BY ''' + search_metric + ''' DESC
         LIMIT 20;'''
