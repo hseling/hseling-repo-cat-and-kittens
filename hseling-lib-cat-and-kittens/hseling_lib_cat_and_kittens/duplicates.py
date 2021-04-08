@@ -16,7 +16,7 @@ def get_windows(l):
 def find_space(text, beg, end):
   while (re.match('\s', text[beg-1]) == None) and (beg > 0):
     beg -= 1
-  while (re.match('\s', text[end]) == None) and (end < len(text)):
+  while (re.match('\s', text[end-1]) == None) and (end < len(text)):
     end += 1
   return beg, end
 
@@ -37,5 +37,5 @@ def check_duplicates(text):
           e = text.rfind(m.group(1)) + m.span(0)[1] - m.span(0)[0]
           right = find_space(text, b, e)
           table.append({'bos': right[0], 'end': right[1]})
-          table.append({'bos': text.rfind(target), 'end': text.rfind(target)+len(target)})
+          table.append({'bos': text.find(target), 'end': text.find(target)+len(target)})
   return table
