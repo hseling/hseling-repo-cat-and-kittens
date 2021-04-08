@@ -11,15 +11,15 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <div class="col-md-4"></div>
-        <div class="col-md-4">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
             <form method="POST" action="{{ url_for('login') }}" novalidate>
                 {{ form.csrf_token }}
                 <h1 class="text-center py-5">Форма входа</h1>
                 {% with messages = get_flashed_messages() %}
                     {% if messages %}
                         {% for message in messages %}
-                            {% if message == 'Registration was successfull' %}
+                            {% if message == 'Вы зарегистрированы' %}
                                 <div class="alert alert-success alert-dismissable" role="alert">
                                     <button type="button" class="close" data-dismiss='alert' aria-label="close">
                                         <span aria-hidden="true">
@@ -30,7 +30,7 @@
                                     </button>
                                     <p class="text-center mb-0" style="color: green;">{{message}}</p>
                                 </div>
-                            {% elif message == 'Password changed successfull' %}
+                            {% elif message == 'Пароль успешно изменен' %}
                                 <div class="alert alert-success alert-dismissable" role="alert">
                                     <button type="button" class="close" data-dismiss='alert' aria-label="close">
                                         <span aria-hidden="true">
@@ -73,15 +73,15 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex justify-content-between align-items-center">
                         <input type="checkbox" required>
-                        <p class="mt-3 ml-2">Remember me</p>
+                        <p class="mt-3 ml-2">Сохранить мои учетные данные</p>
                     </div>
                     <button type="submit" value="login" class="btn btn-outline-info">Авторизоваться</button>
                 </div>
             </form>
             <hr>
-            <p class="text-center">No Account? <a href="{{ url_for('register') }}">Register Now</a> | Forgot <a href="{{ url_for('recoverPassword') }}">Password?</a></p>
+            <p class="text-center">У вас еще нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрируйтесь</a> | Забыли <a href="{{ url_for('recoverPassword') }}">пароль?</a></p>
         </div>
-        <div class="col-md-4"></div>
+        <div class="col-md-3"></div>
     </div>
 </div>
 <footer class="footer">

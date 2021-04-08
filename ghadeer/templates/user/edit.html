@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Upload page{% endblock %}
+{% block title %}загрузить страница{% endblock %}
 
 {% block links %}
 <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
@@ -32,15 +32,15 @@
         {% endif %}
         {% endwith %}
         <div class="form-group">
-            <label for="exampleFormControlTextarea1">Content textarea</label>
+            <label for="exampleFormControlTextarea1">Полный текст версии</label>
             <textarea class="form-control" name="content" cols="10" rows="10">{{ edits.content }}</textarea>
         </div>
         <div class="form-group mt-5">
-            <label for="exampleFormControlTextarea1">Your Comment</label>
+            <label for="exampleFormControlTextarea1">Комментарий</label>
             <input type="text" value="{{ edits.comment }}" class="form-control" name="comment">
         </div>
         <div class="text-center">
-            <button type="submit" class="btn btn-primary text-uppercase">Submit</button>
+            <button type="submit" class="btn btn-primary text-uppercase">Разместить</button>
         </div>
     </form>
 </div>

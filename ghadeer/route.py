@@ -13,7 +13,7 @@ from flask_sqlalchemy import *
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 import secrets
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask.helpers import make_response
 from flask_wtf import form
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -31,13 +31,14 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 import smtplib
 from email.message import EmailMessage
 from sqlalchemy.orm.attributes import flag_modified
+from sqlalchemy import desc
 
 
 app = Flask(__name__)
 
 # All Config
 app.config['SECRET_KEY'] = 'ItIsASecretKey'
-app.config['SQLALCHEMY_DATABASE_URI'] =  'mysql+pymysql://root:@localhost/tiger' #'sqlite:///database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] =  'mysql+pymysql://root:root@database/catstdb'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # app.config['MYSQL_HOST'] = '127.0.0.1'
@@ -60,8 +61,8 @@ def load_user(user_id):
 # Users Forms
 class LoginForm(FlaskForm):
 
-    username = StringField('Username', validators=[InputRequired('Имя пользователя требуется.')])
-    password = PasswordField('Password', validators=[InputRequired('Необходим пароль.'),Length(min=8)])
+    username = StringField('Имя пользователя', validators=[InputRequired('Имя пользователя требуется.')])
+    password = PasswordField('Пароль', validators=[InputRequired('Необходим пароль.'),Length(min=8)])
 
     def validate_username(self, username):
         user = UserInfo.query.filter_by(username=username.data).first()
@@ -70,17 +71,17 @@ class LoginForm(FlaskForm):
 
 class passwordChangeForm(FlaskForm):
 
-    password = PasswordField('New Password', validators=[InputRequired('Please Enter New Password'),Length(min=8)])
-    confirmPassword = PasswordField('Confirm Password', validators=[InputRequired('Please Confirm Your Password'),Length(min=8)])
+    password = PasswordField('Новый пароль', validators=[InputRequired('Пожалуйста, введите новый пароль'),Length(min=8)])
+    confirmPassword = PasswordField('Введите пароль повторно для подтверждения', validators=[InputRequired('Введите пароль повторно для подтверждения'),Length(min=8)])
 
 class passwordRecoverForm(FlaskForm):
 
-    email = StringField('Enter Your Email', validators=[InputRequired(), Email(message='Invalid email address.')])
+    email = StringField('Введите email', validators=[InputRequired(), Email(message='Пожалуйста, перепроверьте адрес электронной почты')])
 
     def validate_email(self, email):
         userEmail = UserInfo.query.filter_by(email=email.data).first()
         if userEmail is None:
-            raise ValidationError('There is no account with this email. You must register first.')
+            raise ValidationError('К вашей электронной почте не привязан личный кабинет. Пожалуйста, зарегистрируйтесь.')
 
 class RegisterForm(FlaskForm):
 
@@ -93,12 +94,12 @@ class RegisterForm(FlaskForm):
     def validate_username(self, username):
         user = UserInfo.query.filter_by(username=username.data).first()
         if user:
-            raise ValidationError('A user is already exists with this username!!!')
+            raise ValidationError('Пользователь с таким именем уже зарегистрирован.')
 
     def validate_email(self, email):
         email = UserInfo.query.filter_by(email=email.data).first()
         if email:
-            raise ValidationError('A user is already exists with this Email!!!')
+            raise ValidationError('Введите пароль повторно для подтверждения.')
 
 
 class profileForm(FlaskForm):
@@ -113,13 +114,18 @@ class profileForm(FlaskForm):
         if username.data != current_user.username:
             user = UserInfo.query.filter_by(username=username.data).first()
             if user:
-                raise ValidationError('A user is already exists with this username!!!')
+                raise ValidationError('Пользователь с таким именем уже зарегистрирован.')
 
     def validate_email(self, email):
         if email.data != current_user.email:
             email = UserInfo.query.filter_by(email=email.data).first()
             if email:
-                raise ValidationError('A user is already exists with this Email!!!')
+                raise ValidationError('Пользователь с таким адресом электронной почты уже зарегистрирован.')
+
+class historySort(FlaskForm):
+    ascending = SubmitField('Дата сохранения')
+    descending = SubmitField('Дата сохранения')
+    alphabateSort = SubmitField('Комментарий')
 
 
 
@@ -206,30 +212,30 @@ def register():
             token = user1.get_reset_token()
             msg = f'''Hello {user},
 
-To activate your account, visit the following link:
+Для активации личного кабинета перейдите по ссылке:
 
 {url_for('activeAccount', token=token, _external=True)}
 
-If you did not make this request then simply ignore this email and no changes will be made. Also this link will expire in 6 hours.
+Если вы не регистрировались на нашем сайте, просто проигнорируйте это письмо. Ссылка действительна в течение 6 часов.
 '''
             sendMsg = EmailMessage()
             sendMsg.set_content(msg)
 
-            sendMsg['Subject'] = "Here Will Be Your Subject"
-            sendMsg['From'] = 'Here will be your website name'
+            sendMsg['Subject'] = "пожалуйста, активируйте свой личный кабинет"
+            sendMsg['From'] = 'CAT&Kittens'
             sendMsg['To'] = email
 
             server = smtplib.SMTP("smtp.gmail.com", 587)
             server.starttls()
             # server.startssl() # if your website have ssl then you need this
-            server.login("here will be your email","here will be your passwords")
+            server.login("Here Will Be Your Email","Here will be your password.")
             server.send_message(sendMsg)
             #activation email ends
-            flash('Registration was successfull')
+            flash('Вы зарегистрированы. Мы отправили вам на почту ссылку для подтверждения регистрации ')
             return redirect(url_for('login'))
 
         else:
-            flash('Password Dose not Match')
+            flash('Пароли не совпадают. ')
             return redirect(url_for('register'))
 
     else:
@@ -265,7 +271,7 @@ def login():
                 return redirect(url_for('login'))
 
         else:
-            flash('Wrong Password')
+            flash('Неверный пароль')
             return redirect(url_for('login'))
 
     return render_template('user/login.html', title='Login', form=loginForm)
@@ -322,12 +328,12 @@ def changePassword():
                 hashPassword = generate_password_hash(passForm.password.data, method='sha256')
                 current_user.password = hashPassword
                 squlitedb.session.commit()
-                flash('Password changed successfull')
+                flash('Пароль успешно изменен')
                 logout_user()
                 return redirect(url_for('login'))
 
             else:
-                flash('Password did not match!! Please try again')
+                flash('Пароли не совпадают. Повторите попытку')
                 return redirect(url_for('changePassword'))
 
     return render_template('user/changepassword.html', title='Change Password', form=passForm)
@@ -338,11 +344,11 @@ def sendResetPasswordEmail(user):
     token = user.get_reset_token()
     msg = f'''Hello {user},
 
-To reset your password, visit the following link:
+Для сброса пароля перейдите по ссылке:
 
 {url_for('recoverToken', token=token, _external=True)}
 
-If you did not make this request then simply ignore this email and no changes will be made. Also this link will expire in 6 hours.
+Если вы не регистрировались на нашем сайте, просто проигнорируйте это письмо. Ссылка действительна в течение 6 часов.
 '''
     sendMsg = EmailMessage()
     sendMsg.set_content(msg)
@@ -354,7 +360,7 @@ If you did not make this request then simply ignore this email and no changes wi
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()
     # server.startssl() # if your website have ssl then you need this
-    server.login("Here will be your email","here will be your passwords")
+    server.login("Here Will Be Your Email","Here will be your password.")
     server.send_message(sendMsg)
 
 
@@ -367,7 +373,7 @@ def recoverPassword():
     elif recoverForm.validate_on_submit():
         user = UserInfo.query.filter_by(email=recoverForm.email.data).first()
         sendResetPasswordEmail(user)
-        flash('An email has sent with instructions to reset your password.', 'success')
+        flash('Мы отправили вам письмо с инструкцией по сбросу пароля', 'success')
         return redirect(url_for('login'))
 
     return render_template('user/recoverpass.html', title='Recover Password', form=recoverForm)
@@ -389,7 +395,7 @@ def recoverToken(token):
                 hashPassword = generate_password_hash(recoverToken.password.data, method='sha256')
                 user.password = hashPassword
                 squlitedb.session.commit()
-                flash('Password has been updated. You are able to login now.')
+                flash('Пароль успешно обновлен. Вы можете войти в личный кабинет.')
                 return redirect(url_for('login'))
 
             else:
@@ -458,7 +464,7 @@ def edit(id):
             comment = commentEdit)
         squlitedb.session.add(newEdit)
         squlitedb.session.commit()
-        flash('Your content is updated!')
+        flash('Новая версия текста сохранена.')
         return redirect(url_for('history'))
 
     return render_template('user/edit.html', edits=editContent)
@@ -526,7 +532,7 @@ def render_upload_file():
                     filename = textid)
                 squlitedb.session.add(userPermissionData)
                 squlitedb.session.commit()
-                flash('Your content is uploaded successfully!')
+                flash('Новая версия текста сохранена.')
                 return redirect(url_for('history'))
     else:
         return render_template('upload_and_spellcheck.html')
@@ -549,9 +555,24 @@ def view(id):
 @app.route('/history', methods=['GET','POST'])
 @login_required
 def history():
-    page = request.args.get('page', 1, type=int)
-    allHistory = userUploadForm.query.order_by(userUploadForm.id.desc()).paginate(page=page, per_page=10)
-    return render_template('user/history.html', histories=allHistory)
+    form = historySort()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            if form.ascending.data:
+                allHistory = userUploadForm.query.order_by(userUploadForm.id)
+                return render_template('user/history.html', histories=allHistory, ascending = True, form=form)
+
+            elif form.descending.data:        
+                allHistory = userUploadForm.query.order_by(userUploadForm.id.desc())
+                return render_template('user/history.html', histories=allHistory, descending=True, form=form)
+
+            elif form.alphabateSort.data:
+                    allHistory = userUploadForm.query.order_by(userUploadForm.comment)
+                    return render_template('user/history.html', histories=allHistory, descending=True, form=form, alphaBateSort=True)
+
+    else:
+        allHistory = userUploadForm.query.order_by(userUploadForm.id.desc())
+        return render_template('user/history.html', histories=allHistory, descending=True, form=form)
 
 @app.route('/')
 def index():
@@ -744,4 +765,4 @@ def main():
     return render_template('main.html', title='About us')
 
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=True)
+    app.run(debug=True, use_reloader=True, host='0.0.0.0', port='8000')

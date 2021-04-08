@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Recover Password{% endblock %}
+{% block title %}Восстановить пароль{% endblock %}
 
 {% block links %}
 <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
@@ -11,7 +11,7 @@
 {% block content %}
 <section class="mt-5">
     <div class="container pt-5">
-        <h1 class="text-center">Recover Password</h1>
+        <h1 class="text-center">Восстановить пароль</h1>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
@@ -32,13 +32,13 @@
             {{ form.csrf_token }}
             <div class="form-group">
               <label for="exampleInputEmail1">{{ form.email.label }}</label>
-              {{ form.email(class="form-control", placeholder="Enter You Valid Email") }}
+              {{ form.email(class="form-control", placeholder="Введите ваш действующий адрес электронной почты") }}
               {% for error in form.email.errors %}
               <small style="color: red!important;" class="form-text text-muted">{{ error }}</small>
               {% endfor %}
             </div>
             <div class="text-center">
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-primary">Представлять</button>
             </div>
           </form>
     </div>
