@@ -156,17 +156,28 @@ def get_endpoints(ctx):
 
     return {ep["name"]: ep for ep in all_endpoints if ep}
 
-@app.route("/api/freq_search")
-def freq_search_endpoint():
-    search_token = request.args.get("token")
-    return jsonify({"values": db_queries.freq_search(search_token)})
-
 @app.route("/api/bigram_search")
 def bigram_search_endpoint():
     search_token = request.args.get("token")
     search_metric = request.args.get("metric")
     search_domain = request.args.get("domain")
     return jsonify({"values": db_queries.bigram_search(search_token, search_metric, search_domain)})
+
+@app.route("/api/single_token_search")
+def single_token_search_endpoint():
+    search_token = request.args.get("token")
+    return jsonify({"values": db_queries.single_token_search(search_token)})
+
+@app.route("/api/lemma_search")
+def lemma_search_endpoint():
+    search_lemma1 = request.args.get("lemma1")
+    search_lemma2 = request.args.get("lemma2")
+    search_morph1 = request.args.get("morph1")
+    search_morph2 = request.args.get("morph2")
+    search_syntrole = request.args.get("syntrole")
+    search_min = request.args.get("min")
+    search_max = request.args.get("max")
+    return jsonify({"values": db_queries.lemma_search(search_lemma1, search_lemma2, search_morph1, search_morph2, search_syntrole, search_min, search_max)})
 
 @app.route("/api/")
 def main_endpoint():

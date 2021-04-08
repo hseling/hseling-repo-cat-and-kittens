@@ -33,18 +33,18 @@
   <div class="row">
     <div class="col-lg-3 order-lg-1">
       <h4>Поиск точной формы</h4>
-      <form class="form-inline my-2 my-lg-0 search-exact" action="search" method="post">
+      <form class="form-inline my-2 my-lg-0 search-exact" action=" {{ url_for('single_token') }} " method="post" id="form1">
         <input type='hidden' name='csrfmiddlewaretoken'
           value={{ random_token }} />
         <input class="form-control mr-sm-2 exact-search-field" type="search" placeholder="Введите словоформу"
           aria-label="Search" name="search" style="width: 100%;">
-        <button class="btn btn-success my-2 my-sm-0 exact-search-button" type="submit">Искать</button>
+        <button class="btn btn-success my-2 my-sm-0 exact-search-button" type="submit" form="form1">Искать</button>
       </form>
     </div>
     <div class="col-lg-9 order-lg-2">
       <h4>Лексико-грамматический поиск</h4>
-      <p>На данный момент грамматический поиск не работает.</p>
-      <form class="form-inline my-2 my-lg-0" action="search" method="post">
+      <!-- <p>На данный момент грамматический поиск не работает.</p> -->
+      <form class="form-inline my-2 my-lg-0" action=" {{ url_for('lemma_search') }} " method="post" id="form2">
         <div class="search-lex-gram">
           <div class="lemma">
             <input type='hidden' name='csrfmiddlewaretoken'
@@ -60,54 +60,43 @@
 
           <div class="distance">
             <p>Расстояние между леммами от
-              <input type=number min="-50" max="50" placeholder="-1" name="min"> до <input type=number min="-50"
+              <input type=number min="-50" max="50" placeholder="1" name="min"> до <input type=number min="-50"
                 max="50" placeholder="1" name="max"></p>
           </div>
 
           <div class="relation">
             <select class="form-control" name="syntax">
-              <option>Синтаксическое отношение</option>
-              <option>acl: clausal modifier of noun (adjectival clause)</option>
-              <option>advcl: adverbial clause modifier</option>
-              <option>advmod: adverbial modifier</option>
-              <option>amod: adjectival modifier</option>
-              <option>appos: appositional modifier</option>
-              <option>aux: auxiliary</option>
-              <option>auxpass: passive auxiliary</option>
-              <option>case: case marking</option>
-              <option>cc: coordinating conjunction</option>
-              <option>ccomp: clausal complement</option>
-              <option>compound: compound</option>
-              <option>conj: conjunct</option>
-              <option>cop: copula</option>
-              <option>csubj: clausal subject</option>
-              <option>csubjpass: clausal passive subject</option>
-              <option>dep: unspecified dependency</option>
-              <option>det: determiner</option>
-              <option>discourse: discourse element</option>
-              <option>dislocated: dislocated elements</option>
-              <option>dobj: direct object</option>
-              <option>expl: expletive</option>
-              <option>foreign: foreign words</option>
-              <option>goeswith: goes with</option>
-              <option>iobj: indirect object</option>
-              <option>list: list</option>
-              <option>mark: marker</option>
-              <option>mwe: multi-word expression</option>
-              <option>name: name</option>
-              <option>neg: negation modifier</option>
-              <option>nmod: nominal modifier</option>
-              <option>nsubj: nominal subject</option>
-              <option>nsubjpass: passive nominal subject</option>
-              <option>nummod: numeric modifier</option>
+              <option>syntrole</option>
+              <option>acl- clausal modifier of noun (adjectival clause)</option>
+              <option>advcl- adverbial clause modifier</option>
+              <option>advmod- adverbial modifier</option>
+              <option>amod- adjectival modifier</option>
+              <option>appos- appositional modifier</option>
+              <option>aux- auxiliary</option>
+              <option>aux:pass- passive auxiliary</option>
+              <option>case- case marking</option>
+              <option>cc- coordinating conjunction</option>
+              <option>ccomp- clausal complement</option>
+              <option>compound- compound</option>
+              <option>conj- conjunct</option>
+              <option>cop- copula</option>
+              <option>csubj- clausal subject</option>
+              <option>csubj:pass- clausal passive subject</option>
+              <option>det- determiner</option>
+              <option>discourse- discourse element</option>
+              <option>expl- expletive</option>
+              <option>flat:foreign- foreign words</option>
+              <option>mark- marker</option>
+              <option>flat:name- name</option>
+              <option>nmod- nominal modifier</option>
+              <option>nsubj- nominal subject</option>
+              <option>nsubj:pass- passive nominal subject</option>
+              <option>nummod- numeric modifier</option>
               <option>obj</option>
-              <option>parataxis: parataxis</option>
-              <option>punct: punctuation</option>
-              <option>remnant: remnant in ellipsis</option>
-              <option>reparandum: overridden disfluency</option>
-              <option>root: root</option>
-              <option>vocative: vocative</option>
-              <option>xcomp: open clausal complement</option>
+              <option>parataxis- parataxis</option>
+              <option>punct- punctuation</option>
+              <option>root- root</option>
+              <option>xcomp- open clausal complement</option>
             </select>
           </div>
 
@@ -120,7 +109,7 @@
 
           </div>
 
-          <button class="btn btn-success lex-gram-button" type="submit">Искать</button>
+          <button class="btn btn-success lex-gram-button" type="submit" form="form2">Искать</button>
         </div>
 
       </form>

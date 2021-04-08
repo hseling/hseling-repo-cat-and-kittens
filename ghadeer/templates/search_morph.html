@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>CAT morphology preferences</title>
+    <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/search_morph.css">
+    <script type="text/javascript" src="../static/dropdown_checkboxes.js"></script>
+</head>
+<body>
+<div class="wrapper">
+    <form name="choice" onsubmit="sendChoiceToParent()" class="row">
+        <input type="hidden" name="csrfmiddlewaretoken" value="n1j4hZqQzIxpcNOayOfiRMY1Asb7MllG8YtGVfAErG4wAtXfLKx2TuRcooa9kcDE">
+        <div class="col-5 form-check">
+            <h5>Часть речи</h5>
+
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="ADJ" id="Check1">
+                <label class="form-check-label" for="Check1">ADJ: adjective</label><br></div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="ADP" id="Check2">
+                <label class="form-check-label" for="Check2">ADP: adposition</label><br></div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="ADV" id="Check3">
+                <label class="form-check-label" for="Check3">ADV: adverb</label><br></div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="AUX" id="Check4">
+                <label class="form-check-label" for="Check4">AUX: auxiliary verb</label><br></div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="CCONJ" id="Check5">
+                <label class="form-check-label" for="Check5">CCONJ: coordinating conjunction</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="DET" id="Check6">
+                <label class="form-check-label" for="Check6">DET: determiner</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="INTJ" id="Check7">
+                <label class="form-check-label" for="Check7">INTJ: interjection</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="NOUN" id="Check8">
+                <label class="form-check-label" for="Check8">NOUN: noun</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="NUM" id="Check9">
+                <label class="form-check-label" for="Check9">NUM: numeral</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="PART" id="Check10">
+                <label class="form-check-label" for="Check10">PART: particle</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="PRON" id="Check11">
+                <label class="form-check-label" for="Check11">PRON: pronoun</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="PROPN" id="Check12">
+                <label class="form-check-label" for="Check12">PROPN: proper noun</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="PUNCT" id="Check13">
+                <label class="form-check-label" for="Check13">PUNCT: punctuation</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="SCONJ" id="Check14">
+                <label class="form-check-label" for="Check14">SCONJ: subordinating conjunction</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="SYM" id="Check15">
+                <label class="form-check-label" for="Check15">SYM: symbol</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="VERB" id="Check16">
+                <label class="form-check-label" for="Check16">VERB: verb</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="X" id="Check17">
+                <label class="form-check-label" for="Check17">X: other</label><br>
+            </div>
+        </div>
+        <div class="col-5 form-check">
+            <h5>Другие характеристики</h5>
+
+            <h6>Animacy: animacy</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Anim" id="CheckAnim">
+                <label class="form-check-label" for="CheckAnim">Anim</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Inan" id="CheckInan">
+                <label class="form-check-label" for="CheckInan">Inan</label><br>
+            </div>
+
+            <h6>Aspect: aspect</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Aspect=Imp" id="CheckImp">
+                <label class="form-check-label" for="CheckImp">Imp</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Perf" id="CheckPerf">
+                <label class="form-check-label" for="CheckPerf">Perf</label><br>
+            </div>
+
+            <h6>Case: case</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Nom" id="CheckNom">
+                <label class="form-check-label" for="CheckNom">Nom</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Acc" id="CheckAcc">
+                <label class="form-check-label" for="CheckAcc">Acc</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Dat" id="CheckDat">
+                <label class="form-check-label" for="CheckDat">Dat</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Gen" id="CheckGen">
+                <label class="form-check-label" for="CheckGen">Gen</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Ins" id="CheckIns">
+                <label class="form-check-label" for="CheckIns">Ins</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Loc" id="CheckLoc">
+                <label class="form-check-label" for="CheckLoc">Loc</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Par" id="CheckPar">
+                <label class="form-check-label" for="CheckPar">Par</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Voc" id="CheckVoc">
+                <label class="form-check-label" for="CheckVoc">Voc</label><br>
+            </div>
+            <h6>Degree: degree of comparison</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Pos" id="CheckPos">
+                <label class="form-check-label" for="CheckPos">Pos</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Cmp" id="CheckCmp">
+                <label class="form-check-label" for="CheckCmp">Cmp</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Sup" id="CheckSup">
+                <label class="form-check-label" for="CheckSup">Sup</label><br>
+            </div>
+
+            <h6>Foreign: non-Russian word</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Yes" id="CheckYes">
+                <label class="form-check-label" for="CheckYes">Yes</label><br>
+            </div>
+
+            <h6>Gender: gender</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Fem" id="CheckFem">
+                <label class="form-check-label" for="CheckFem">Fem</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Masc" id="CheckMasc">
+                <label class="form-check-label" for="CheckMasc">Masc</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Neut" id="CheckNeut">
+                <label class="form-check-label" for="CheckNeut">Neut</label><br>
+            </div>
+
+            <h6>Mood: mood</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Mood=Imp" id="CheckImper">
+                <label class="form-check-label" for="CheckImper">Imp</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Cnd" id="CheckCnd">
+                <label class="form-check-label" for="CheckCnd">Cnd</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Ind" id="CheckInd">
+                <label class="form-check-label" for="CheckInd">Ind</label><br>
+            </div>
+
+            <h6>Number: number</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Sing" id="CheckSing">
+                <label class="form-check-label" for="CheckSing">Sing</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Plur" id="CheckPlur">
+                <label class="form-check-label" for="CheckPlur">Plur</label><br>
+            </div>
+
+            <h6>Person: person</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="1" id="CheckPerson1">
+                <label class="form-check-label" for="CheckPerson1">1</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="2" id="CheckPerson2">
+                <label class="form-check-label" for="CheckPerson2">2</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="3" id="CheckPerson3">
+                <label class="form-check-label" for="CheckPerson3">3</label><br>
+            </div>
+
+            <h6>Tense: tense</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Fut" id="CheckFut">
+                <label class="form-check-label" for="CheckFut">Fut</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Past" id="CheckPast">
+                <label class="form-check-label" for="CheckPast">Past</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Pres" id="CheckPres">
+                <label class="form-check-label" for="CheckPres">Pres</label><br>
+            </div>
+
+            <h6>VerbForm</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Conv" id="CheckConv">
+                <label class="form-check-label" for="CheckConv">Conv</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Fin" id="CheckFin">
+                <label class="form-check-label" for="CheckFin">Fin</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Inf" id="CheckInf">
+                <label class="form-check-label" for="CheckInf">Inf</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Part" id="CheckPart">
+                <label class="form-check-label" for="CheckPart">Part</label><br>
+            </div>
+
+            <h6>Voice: voice</h6>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Act" id="CheckAct">
+                <label class="form-check-label" for="CheckAct">Act</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Mid" id="CheckMid">
+                <label class="form-check-label" for="CheckMid">Mid</label><br>
+            </div>
+            <div class="form-check-row">
+                <input class="form-check-input" type="checkbox" value="Pass" id="CheckPass">
+                <label class="form-check-label" for="CheckPass">Pass</label><br>
+            </div>
+        </div>
+            <div class="col-12 order-2" style="text-align: center;">
+                <button class="btn btn-lg btn-primary" type="submit" style="display: inline; margin-top: 1.5rem">ОК</button>
+            </div>
+    </form>
+
+
+</div>
+
+</body></html>

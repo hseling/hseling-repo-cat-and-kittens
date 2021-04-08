@@ -1,0 +1,29 @@
+Flask
+nltk
+requests
+uuid
+charset_normalizer
+numpy
+pandas
+mysql
+conllu
+ufal.udpipe
+flask-mysqldb
+flask_sqlalchemy
+flask-wtf
+flask-login
+email-validator
+flask-mail
+pymysql
+Flask-Migrate
+Flask-Cors
+mysqlclient
+SQLAlchemy
+pika
+Flask-Script
+
+
+# *To create an SQLite database open python shell in the root directory and use this code
+# $ from route import app, squlitedb
+# $ squlitedb.create_all()
+# $ squlitedb.session.commit()

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Анализ текста{% endblock %}
+
+{% block links %}
+<link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
+<link href="../static/css/bootstrap.css" rel="stylesheet">
+<link href="../static/css/sticky-footer-navbar.css" rel="stylesheet">
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+<link href="{{url_for('static', filename='css/editing.css') }}" rel="stylesheet">
+<script type='text/javascript' src="{{url_for('static', filename='editing.js') }}"></script>
+<script type='text/javascript' src="{{url_for('static', filename='highlighting.js') }}"></script>
+<script type='text/javascript' src="{{url_for('static', filename='text_props.js') }}"></script>
+
+{% endblock %}
+
+{% block content %}
+<main role="main" class="container">
+  <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+    <h4>Анализ академичности текста</h4>
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#rdb">Удобочитаемость</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" name="editing-link" data-toggle="tab" href="#editing">Отредактировать свой текст</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#graphics">Общая информация</a>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane" id="graphics">
+        <table class="table table-striped">
+          <tbody>
+            <tr>
+              <th scope="row">Название</th>
+              <td id='filename'></td>
+            </tr>
+            <tr>
+              <th scope="row">Всего слов</th>
+              <td id='totalWords'></td>
+            </tr>
+            <tr>
+              <th scope="row">Уникальных слов</th>
+              <td id='uniqueWords'></td>
+            </tr>
+            <tr>
+              <th scope="row">Удобочитаемость</th>
+              <td id='FKG'></td>
+            </tr>
+            <tr>
+              <th scope="row">Уровень по шкале CEFR</th>
+              <td id='CEFR'></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tab-pane active" id="rdb">
+        <a class="col-lg-8 col-md-10"><h5>График удобочитаемости</h5>Ваш рузельтат - в последнем столбце.<br>Чем больше значение удобочитаемости, тем более академичным является ваш текст.</a>
+        <canvas id="chart" class="col-xl-10 col-lg-12 col-md-12"></canvas>
+      </div>
+
+        <div class="tab-pane" id="editing">
+          <div class="container">
+
+          <div class="row">
+            <div class="col">
+              <div class='submit' id='submitCheckingForm'>
+                <div id='checking_options'></div>
+                <input type="button" class="btn btn-outline-primary" name="submit_checking"
+                  value="Проверить выбранные аспекты новой версии текста" />
+              </div>
+            </div>
+          </div>
+
+
+            <div class="row" name="saving_recommendation">
+              Вы можете скопировать отредактированную версию своего текста и сохранить ее в личном кабинете
+            </div>
+            <div class="row mt-3">
+              <div class="col">
+                <div class='source_text'></div>
+              </div>
+              <div class="col">
+                <div class='edited_text'>
+                  <textarea class='form-control edited_text_field'></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container custom-footer">
+    <span class="text-muted">
+      <img class="cat-image" src="../static/img/cat8.jpg" />
+    </span>
+  </div>
+</footer>
+{% endblock %}
