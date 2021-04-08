@@ -23,12 +23,13 @@ LATINS = re.compile(r"([a-zA-Z]+\W+)|(\W+[a-zA-Z]+)|(\W+[a-zA-Z]\W+)|([a-zA-Z]+)
 CYRILLIC = re.compile(r"([а-яА-ЯёЁ]+\W+)|(\W+[а-яА-ЯёЁ]+)|(\W+[а-яА-ЯёЁ]\W+)")
 
 CONN = boilerplate.get_mysql_connection()
-
-CASHING_PREFIX = 'cashing/'
+CASHING_PREFIX = 'hseling_api_cat_and_kittens/cashing/'
 MOST_COMMON_JSON = 'morphology_checking_most_common.json'
 CASH_LIMIT = 5000
 
-PATH_TO_MOST_COMMON_JSON = boilerplate.PATH_TO_DATA + CASHING_PREFIX + MOST_COMMON_JSON
+print(os.listdir(os.getcwd()))
+PATH_TO_MOST_COMMON_JSON = os.path.join(os.getcwd(), CASHING_PREFIX, MOST_COMMON_JSON)
+print(PATH_TO_MOST_COMMON_JSON)
 MOST_COMMON_CORPUS = json.load(open(PATH_TO_MOST_COMMON_JSON, encoding='utf-8'))
 MOST_COMMON_CORPUS = {token:set(known_parsing_results) for token, known_parsing_results in MOST_COMMON_CORPUS.items()}
 
@@ -66,16 +67,6 @@ class GrammarCash():
         if len(self.cash) > self.cash_limit:
             self.clean_cash()
 
-    # def strict_check(self, token):
-    #     form = token['form']
-    #     if form in self.cash:
-    #         if self.stringify_grammar(token) in self.cash[form]:
-    #             return True
-    #         else:
-    #             return False
-    #     else:
-    #         return None
-
     def strict_check(self, token):
         form = token['form']
         if form in self.cash and self.stringify_grammar(token) in self.cash[form]:
@@ -95,7 +86,6 @@ CORPUS_CASH = GrammarCash(cash=MOST_COMMON_CORPUS)
 #CORPUS_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 CORRECT_CASH = GrammarCash(cash_limit=CASH_LIMIT)
 WRONG_CASH = GrammarCash(cash_limit=CASH_LIMIT)
-
 
 
 def is_morphology_correct(words, corpus_cash=CORPUS_CASH, correct_cash=CORRECT_CASH, wrong_cash=WRONG_CASH):
