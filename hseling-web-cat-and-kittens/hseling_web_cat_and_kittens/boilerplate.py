@@ -27,12 +27,12 @@ def domain_to_index(search_domain):
     return domain_token
 
 def get_metric_dict():
-    metric_dict = {'PMI' : 'pmi', 't-score' : 't_score', 'logdice' : 'logdice', 'Frequency' : 'frequency'}
+    metric_dict = {'PMI' : 'pmi', 't-score' : 't_score', 'logdice' : 'logdice', 'Частота' : 'frequency'}
     return metric_dict
 
 def metric_converter(search_metric):
     """
-    convert metric string name into server-readable string
+    converts metric string name into server-readable string
     """
     metric_dict = get_metric_dict()
 
@@ -46,3 +46,26 @@ def metric_converter(search_metric):
         metric_token = 'frequency'
     
     return metric_token
+
+def get_ngrams_dict():
+    ngrams_dict = {"Биграммы" : 2, "Триграммы" : 3, "Четырехграммы" : 4, "Пятиграммы" : 5, "Шестиграммы" : 6}
+    return ngrams_dict
+
+def ngrams_converter(search_ngrams):
+    """
+    converts ngram string name into server-readable int
+    """
+    ngrams_dict = get_ngrams_dict()
+
+    if search_ngrams == 'Биграммы':
+        ngrams_token = ngrams_dict.get('Биграммы')
+    elif search_ngrams == 'Триграммы':
+        ngrams_token = ngrams_dict.get('Триграммы')
+    elif search_ngrams == 'Четырехграммы':
+        ngrams_token = ngrams_dict.get('Четырехграммы')
+    elif search_ngrams == 'Пятиграммы':
+        ngrams_token = ngrams_dict.get('Пятиграммы')
+    else:
+        ngrams_token = ngrams_dict.get('Шестиграммы') 
+    
+    return ngrams_token 

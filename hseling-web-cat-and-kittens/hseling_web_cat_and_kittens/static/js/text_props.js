@@ -1,12 +1,13 @@
-var setupTextEditing = function() {
+var setupTextStatistics = function() {
     var urlParams = new URLSearchParams(window.location.search);
-    $.get(`/get_statistics/${urlParams.get('file_id')}`, function(data) {
+    $.get(`/web/get_statistics/${urlParams.get('file_id')}`, function(data) {
         const readability = data.readability_score;
         $("#FKG").text(readability);
-
+        console.log("READABILITY");
+        console.log(readability);
         const file_id = urlParams.get('file_id');
         $("#filename").text(file_id);
-        
+
         const total = data.total_words;
         $("#totalWords").text(total);
 
@@ -17,7 +18,7 @@ var setupTextEditing = function() {
         $("#CEFR").text(CEFR);
 
         var barData = {
-            labels: ['ECON', 'JUR', 'LING', 'PSYCH', 'HIST', 'SOC', 'YOU'],
+            labels: ['Экономика', 'Право', 'Лингвистика', 'Психология', 'История', 'Социология', 'Ваш текст'],
             datasets: [{
                 fillColor: ['rgba(151,187,205,0.2)', "rgba(151,187,205,0.2)", "rgba(151,187,205,0.2)", "rgba(151,187,205,0.2)", "rgba(151,187,205,0.2)", "rgba(151,187,205,0.2)", "rgba(151,187,205,1)"],
                 strokeColor: "rgba(151,187,205,1)",
@@ -45,5 +46,4 @@ var setupTextEditing = function() {
     });
 
 }
-
-setTimeout(setupTextEditing, 0);
+setTimeout(setupTextStatistics, 300);

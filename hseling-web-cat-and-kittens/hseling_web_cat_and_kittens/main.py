@@ -1,17 +1,21 @@
-import os
+import os, sys
+import codecs, re
+from nltk import sent_tokenize
+# import pandas as pd
+from collections import Counter
 from base64 import b64decode, b64encode
 # from flask import Flask, Blueprint, render_template, request, redirect, jsonify
 from logging import getLogger
 import requests
 from flask_mysqldb import MySQL
 import json
+import re
 from flask import *
-# from hseling_api_cat_and_kittens.boilerplate import get_mysql_connection
-# from file_manager import *
-# import spelling
-# import constants
+from hseling_web_cat_and_kittens.file_manager import *
+import hseling_web_cat_and_kittens.spelling
+import hseling_web_cat_and_kittens.constants as constants
 # import secrets
-# from readability import countFKG, uniqueWords
+from hseling_web_cat_and_kittens.readability import countFKG, uniqueWords, CEFR
 
 from hseling_web_cat_and_kittens import boilerplate
 
@@ -83,8 +87,8 @@ log = getLogger(__name__)
 
 class LoginForm(FlaskForm):
 
-    username = StringField('Username', validators=[InputRequired('Имя пользователя требуется.')])
-    password = PasswordField('Password', validators=[InputRequired('Необходим пароль.')])
+    username = StringField('Имя пользователя', validators=[InputRequired('Требуется имя пользователя.')])
+    password = PasswordField('Пароль', validators=[InputRequired('Необходим пароль.')])
 
     def validate_username(self, username):
         user = UserInfo.query.filter_by(username=username.data).first()
@@ -96,7 +100,7 @@ class RegisterForm(FlaskForm):
 
     fullname = StringField('ФИО', validators=[InputRequired('Требуется ФИО')])
     username = StringField('Имя пользователя', validators=[InputRequired('Требуется имя пользователя')])
-    password = PasswordField('пароль', validators=[InputRequired('Требуется пароль')])
+    password = PasswordField('Пароль', validators=[InputRequired('Требуется пароль')])
     password1 = PasswordField('Подтвердить пароль', validators=[InputRequired('Подтвердить пароль')])
     email = StringField('Эл. адрес', validators=[InputRequired(), Email(message='Требуется эл. адрес')])
 
@@ -186,7 +190,7 @@ def register():
             squlitedb.session.commit()
             flash('Registration was successfull')
             return redirect(url_for('login'))
-        
+
         else:
             flash('Password Dose not Match')
             return redirect(url_for('register'))
@@ -266,7 +270,7 @@ def upload():
         squlitedb.session.commit()
         flash('Your content is updated!')
         return redirect(url_for('upload'))
-    
+
     else:
         return render_template('user/upload.html')
 
@@ -302,25 +306,62 @@ def history():
 def index():
     return render_template('index.html', title='Home')
 
-@app.route('/web/search', methods=['GET', 'POST'])
+@app.route('/web/search', methods=['GET'])
 def search():
-    
-    if request.method == "GET":
-        tk = secrets.token_urlsafe()
-        session['csrftoken'] = str(tk)
-        session_csrftoken = session['csrftoken']
-        return render_template('search.html', title='Search', random_token=session_csrftoken)
+    tk = secrets.token_urlsafe()
+    session['csrftoken'] = str(tk)
+    session_csrftoken = session['csrftoken']
+    return render_template('search.html', title='Search', random_token=session_csrftoken)
 
-    else:
+@app.route('/web/lemma_search', methods=['GET', 'POST'])
+def lemma_search():
+    if request.method == 'POST':
         details = request.form
-        search_token = details['search']
-        csrftoken = details['csrfmiddlewaretoken']
-        if csrftoken == session.get('csrftoken', None):
-            api_endpoint = get_server_endpoint() + "/freq_search?token=" + search_token
-            result = requests.get(api_endpoint).content
-            return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=search_token)
-        else:
-            return "Error 400"
+        if details['lemma1'] != None or details['lemma2'] != None:
+            lemma1 = details['lemma1'] if details['lemma1'] != None else ""
+            lemma2 = details['lemma2'] if details['lemma2'] != None else ""
+            morph1 = details['morph1'] if details['morph1'] != None else ""
+            morph2 = details['morph2'] if details['morph2'] != None else ""
+            # syntrole = details['syntax'] if details['syntax'] != "syntrole" else ""
+            min_ = details['min'] if details['min'] != None else ""
+            max_ = details['max'] if details['max'] != None else ""
+            csrftoken = details['csrfmiddlewaretoken']
+            if csrftoken == session.get('csrftoken', None):
+                print("csrftoken matches")
+                api_endpoint = get_server_endpoint() + "/lemma_search?"
+                api_endpoint += "&lemma1=" + lemma1
+                api_endpoint += "&lemma2=" + lemma2
+                api_endpoint += "&morph1=" + morph1
+                api_endpoint += "&morph2=" + morph2
+                # api_endpoint += "&syntrole=" + syntrole
+                api_endpoint += "&min=" + min_
+                api_endpoint += "&max=" + max_
+                api_endpoint += "&domain=" + details['domain']
+                result = requests.get(api_endpoint).content
+                return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=lemma1, page="search", display_type="elegant")
+            else:
+                return "Error 404"
+    else:
+        return redirect('/web/search')
+
+@app.route('/web/single_token', methods=['GET', 'POST'])
+def single_token():
+    if request.method == 'POST':
+        details = request.form
+        print(details)
+        if details['search'] != None:
+            search_token = details['search'] if details['search'] != None else ""
+            csrftoken = details['csrfmiddlewaretoken']
+            if csrftoken == session.get('csrftoken', None):
+                print("csrftoken matches")
+                api_endpoint = get_server_endpoint() + "/single_token_search?token=" + search_token
+                api_endpoint += "&domain=" + details['domain']
+                result = requests.get(api_endpoint).content
+                return render_template('db_response.html', response=json.dumps(json.loads(result)["values"]), token=search_token, page="search", display_type="elegant")
+            else:
+                return "Error 400"
+    else:
+        return redirect('/web/search')
 
 @app.route('/web/search_morph')
 def search_morph():
@@ -344,43 +385,78 @@ def collocations():
         search_token = details['search_collocations']
         csrftoken = details['csrfmiddlewaretoken']
         if csrftoken == session.get('csrftoken', None):
+            print("csrftoken matches")
             search_token = details['search_collocations']
             search_metric = details['search-metric']
             search_metric = boilerplate.metric_converter(search_metric)
             search_domain = details['search-domain']
             search_domain = boilerplate.domain_to_index(search_domain)
-            api_endpoint = get_server_endpoint() + "/bigram_search?token=" + search_token + "&metric="
+            search_ngrams = details['search-ngrams']
+            search_ngrams = boilerplate.ngrams_converter(search_ngrams)
+            api_endpoint = get_server_endpoint() + "/collocation_search?token=" + search_token + "&metric="
             api_endpoint += search_metric + "&domain=" + str(search_domain)
+            api_endpoint += "&ngrams=" + str(search_ngrams)
             result = requests.get(api_endpoint).content
             result = json.loads(result)
             result = result["values"]
             if not result:
                 return 'Error 400'
-            else: 
-                return render_template('db_response.html', response=json.dumps(result), token=search_token)
+            else:
+                return render_template('db_response.html', response=json.dumps(result), token=search_token, page="collocations" , display_type="table")
         else: "Error 400"
+
+#@app.route('/web/upload_file', methods=['GET', 'POST'])
+#def upload_file():
+#    contents = ''
+#    if request.method == 'POST':
+#        contents = request.values.get('input_text')
+#        requests.post(get_server_endpoint() + 'upload_file', data={"input_text" : contents})
+#    return render_template('upload_and_spellcheck.html', text=contents)
 
 @app.route('/web/render_upload_file', methods=['GET'])
 def render_upload_file():
+    #return render('text')
     return render_template('upload_and_spellcheck.html')
 
-@app.route('/web/upload_file', methods=['POST'])
+
+
+@app.route('/web/upload_text_old', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
+    print('upload_file', request.json)
+    if 'text' in request.json:
+        text = request.json['text']
+    if not isinstance(text, str):
+        text = str(text)
+        ##Возможно, стоит возвращать тут серверную ошибку
+    if not text.strip():
         return 'Файл не был отправлен', 400
-    file = request.files['file']
-    file_id = save_file_first_time_and_get_id(file)
-    if not is_encoding_supported(file_id):
-        return 'Сохраните файл в кодировке utf-8', 400
-    elif not are_paragraphs_correct(file_id):
-        return 'Разделите длинные абзацы на несколько', 400
+    if not re.search('[А-Яа-яЁё]', text):
+        return 'На сайте можно проверять только русскоязычные тексты', 400
+    #toDo перед проверкой абзацев избавляться от лишних символов разрыва строки
+    if not are_paragraphs_correct(text):
+        return 'Разделите длинные абзацы на несколько частей', 400
     else:
-        return jsonify({'file_id': file_id})
+        save_file_respond = requests.post(os.path.join(get_server_endpoint(), "upload_text_old"), data={'text': text})
+        if save_file_respond.status_code == 200 and 'file_id' in save_file_respond.json():
+            return jsonify({'file_id': save_file_respond.json()['file_id']})
+        else:
+            return 'Произошла непредвиденная ошибка', save_file_respond.status_code
+
+
+
+    print('Получили файл, тип объекта', type(file_))
+    file_id = save_file_first_time_and_get_id(file_)
+    # if not is_encoding_supported(file_id):
+    #     return 'Сохраните файл в кодировке utf-8', 400
+    # elif not are_paragraphs_correct(file_id):
+    #     return 'Разделите длинные абзацы на несколько', 400
+    # else:
+    return jsonify({'file_id': file_id})
 
 @app.route('/web/get_spelling_problems/<file_id>', methods=['GET'])
 def get_spelling_data(file_id):
     text = get_last_version(file_id)
-    spellchecker = spelling.SpellChecker()
+    spellchecker = hseling_web_cat_and_kittens.spelling.SpellChecker()
     problems = spellchecker.check_spelling(text)['problems']
     return jsonify({'spelling_problems': problems})
 
@@ -389,7 +465,7 @@ def correct_spelling():
     file_id = request.json['file_id']
     text = get_last_version(file_id)
     user_corrections = request.json['problems_with_corrections']
-    corrected_text = spelling.make_changes(text, user_corrections)
+    corrected_text = hseling_web_cat_and_kittens.spelling.make_changes(text, user_corrections)
     save_next_version(corrected_text, file_id)
     return jsonify({'success':True})
 
@@ -401,15 +477,20 @@ def possible_aspects():
 @app.route('/web/get_statistics/<file_id>', methods=['GET'])
 def get_statistics(file_id):
     text = get_last_version(file_id)
+    print(text)
+    #text = "Это какой-то текст без ошибок."
     readability_score = countFKG(text)
     total, unique = uniqueWords(text)
-    return jsonify({'readability_score': readability_score, 
+    cefr_lvl = CEFR(readability_score)
+    return jsonify({'readability_score': readability_score,
                     'total_words': total,
-                    'unique_words': unique})
+                    'unique_words': unique,
+                    'CEFR': cefr_lvl})
 
 @app.route('/web/send_last_version/<file_id>', methods=['GET'])
 def send_last_version(file_id):
     text = get_last_version(file_id)
+    print('Получен текст', text)
     return jsonify({'text': text})
 
 @app.route('/web/save_edited_text', methods=['POST'])
@@ -420,16 +501,22 @@ def save_edited_text():
     save_next_version(text, file_id)
     return jsonify({'success':True})
 
-@app.route('/web/aspects_checking', methods=['POST']) 
+@app.route('/web/aspects_checking', methods=['POST'])
 def aspects_checking():
     data = request.get_json()
-    file_id = data['file_id'] 
-    text = get_last_version(file_id)  
-    chosen_aspects = data['chosen_aspects']
-    problems = {}
-    for chosen_aspect in chosen_aspects:
-        checking_function = constants.ASPECT2FUNCTION[chosen_aspect]
-        problems[chosen_aspect] = checking_function(text)
+    file_id = data['file_id']
+    text = get_last_version(file_id)
+    aspects = data['chosen_aspects']
+    print('web_aspects', aspects)
+    #ToDo create route in api and make a query instead of storing api data in web part as we do now
+   # if not aspects or not hasattr(aspects, '__iter__') or any([aspect not in constants.ASPECTS for aspect in aspects]):
+   #     aspects = constants.ASPECTS
+    checker_respond = requests.post(os.path.join(get_server_endpoint(), "check_text"), data={'text': text, 'aspects':'&'.join(aspects)})
+    if checker_respond.status_code == 200 and 'problems' in checker_respond.json():
+        problems = checker_respond.json()['problems']
+    else:
+        print('Не удалось получить результаты проверки аспектов')
+        problems = {aspect:[] for aspect in aspects}
     return jsonify({'problems':problems, 'text': text})
 
 @app.route('/web/analysis')

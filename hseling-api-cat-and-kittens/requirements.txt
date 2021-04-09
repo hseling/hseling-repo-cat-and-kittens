@@ -5,3 +5,9 @@ requests
 lxml
 html5lib
 beautifulsoup4
+
+nltk==3.5
+numpy==1.19.3
+pandas==1.1.5
+conllu==4.2.2
+ufal.udpipe==1.2.0.3
