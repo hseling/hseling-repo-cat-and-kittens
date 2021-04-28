@@ -137,14 +137,16 @@ def get_task_status(task_id):
 
 def save_file(upload_file):
     filename = UPLOAD_PREFIX + secure_filename(upload_file.filename)
+    print("filenames is ", filename)
+    # filename = UPLOAD_PREFIX + upload_file.filename
     file_bytes = BytesIO()
     upload_file.save(file_bytes)
     file_size = file_bytes.tell()
     file_bytes.seek(SEEK_SET)
     put_file(filename, file_bytes, file_size)
     return {
-        'file_id': filename,
-        'file_size': file_size
+        "file_id": filename,
+        "file_size": file_size
     }
 
 def save_file_simple(file_name, file_contents, file_size):

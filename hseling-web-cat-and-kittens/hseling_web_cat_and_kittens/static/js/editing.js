@@ -22,16 +22,18 @@ var setupTextEditing = function() {
   // });
 
 
-  $.get(`/send_last_version/${urlParams.get('file_id')}`, function(data) {
+  $.get(`/web/send_last_version/${urlParams.get('file_id')}`, function(data) {
     const text = data.text;
     console.log('get_text', data);
-    $(".source_text").html(text);
+    console.log('text', text);
+    console.log('prepared_text', text.replaceAll('\n', '<br>'));
+    $(".source_text").html(text.replaceAll('\n', '<br>'));
     $('.edited_text_field').val(text);
   });
 
 
 
-  $.get(`/possible_aspects`, function(data) {
+  $.get(`/web/possible_aspects`, function(data) {
     console.log(data);
     let checkingOptionsDiv = document.getElementById("checking_options");
     possibleAspects = data.possible_aspects;
@@ -67,6 +69,7 @@ var setupTextEditing = function() {
   });
 
   $("input[name='submit_checking']").bind('click', function() {
+      console.log('click')
       const editedText = $('.edited_text_field').val();
       const file_id = urlParams.get('file_id');
       //   const editedText4NextChecking = {
@@ -77,7 +80,7 @@ var setupTextEditing = function() {
       $.ajax({
           type: "POST",
           //НАПИСАТЬ РУТ ДЛЯ СОХРАНЕНИЯ
-          url: "/save_edited_text",
+          url: "/web/save_edited_text",
           dataType: "json",
           contentType: "application/json; charset=utf-8",
           data: JSON.stringify({
@@ -93,9 +96,11 @@ var setupTextEditing = function() {
               }
             });
             console.log('chosenNextCheckAspects', chosenNextCheckAspects)
+            $('.loader-wrapper').append('<div class="row mt-3 loader"></div>');
+            $('.text_for_correction').hide()
             $.ajax({
               type: "POST",
-              url: "/aspects_checking",
+              url: "/web/aspects_checking",
               dataType: "json",
               contentType: "application/json; charset=utf-8",
               data: JSON.stringify({
@@ -111,16 +116,22 @@ var setupTextEditing = function() {
                 const highlightedText = getCorrectionsHtml(text, problems, possibleAspectIds);
                 console.timeEnd('getCorrectionsHtml');
                // console.log('highlightedText', highlightedText);
+                console.log('text', text);
+                console.log('highlightedText', highlightedText);
+                console.log('prepared_text', highlightedText);
                 $(".source_text").html(highlightedText);
                 $('.edited_text textarea').val(text);
+              },
+              complete: function() {
+                $('.loader').remove()
+                $('.text_for_correction').show()
               }
               //window.location.replace(encodeURI(`/editing_form?text_id=${file_id}_spelling`));
             });
-            //добавить случай неуспеха                   
+            //добавить случай неуспеха
           }
       });
   });
 
 }
-
-setTimeout(setupTextEditing, 0);
+setTimeout(setupTextEditing, 300);

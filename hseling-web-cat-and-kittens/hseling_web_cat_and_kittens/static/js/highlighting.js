@@ -65,15 +65,14 @@ function highlightText(text, problems) {
     if (!text) {
         return '';
     }
-    const id2labels = transformProblemsIntoDictionary(problems);
 
+    const id2labels = transformProblemsIntoDictionary(problems);
     const htmlParts2Highlight = [];
     let currentStartId = 0;
     let currentClassLabels = id2labels[currentStartId];
     for (let currentEndId = 1; currentEndId < text.length; currentEndId++) {
         if (!areSetsEqual(id2labels[currentEndId], currentClassLabels)) {
             const currentTextFragment = text.slice(currentStartId, currentEndId);
-
             const currentHtmlPart = addTags(currentTextFragment, currentClassLabels);
             console.debug('currentHtmlPart:', currentHtmlPart);
             console.debug('currentClassLabels:', currentClassLabels)
@@ -82,10 +81,15 @@ function highlightText(text, problems) {
             currentClassLabels = id2labels[currentEndId];
         }
     }
-    const lastTextFragment = text.slice(currentStartId);
-    htmlParts2Highlight.push(addTags(lastTextFragment, currentClassLabels));
 
-    return htmlParts2Highlight.join('');
+    const lastTextFragment = text.slice(currentStartId);
+    const lastHtmlPart = addTags(lastTextFragment, currentClassLabels);
+    htmlParts2Highlight.push(lastHtmlPart);
+    
+    let highlitedTextHtml = htmlParts2Highlight.join(' ');
+    highlitedTextHtml = highlitedTextHtml.replaceAll('[ ]+', ' ');
+    highlitedTextHtml = highlitedTextHtml.replaceAll('\n', '<br>');
+    return highlitedTextHtml
 }
 
 var getCorrectionsHtml = function(text, corrections, possibleAspectIds) {

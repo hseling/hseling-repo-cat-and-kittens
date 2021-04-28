@@ -1,39 +1,95 @@
 {% extends 'base.html' %}
-{% block title %}History Page{% endblock %}
+{% block title %}История редактирования ваших текстов{% endblock %}
 
 {% block links %}
 <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
 <link href="../static/css/bootstrap.css" rel="stylesheet">
 <link href="../static/css/sticky-footer-navbar.css" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/user.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script> -->
 {% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-  <table class="table mt-5">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Date</th>
-        <th scope="col">Author</th>
-        <th scope="col">View/Edit</th>
-        <th scope="col">Comment</th>
-      </tr>
-    </thead>
-    {% for history in histories %}
-    {% if history.author == current_user.username %}
-    <tbody>
-      <tr>
-        <th scope="row">{{ history.id }}</th>
-        <td>{{ history.date_posted }}</td>
-        <td>{{ history.author }}</td>
-        <td><a href="/view-content/{{ history.id }}" target="_blank">View</a> / <a href="/edit-content/{{ history.id }}">Edit</a></td>
-        <td>{{ history.comment }}</td>
-      </tr>
-    </tbody>
-    {% else %}
-    {% endif %}
-    {% endfor %}
-  </table>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-success alert-dismissable" role="alert">
+    <button type="button" class="close" data-dismiss='alert' aria-label="close">
+      <span aria-hidden="true">
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-backspace" fill="currentColor"
+          xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd"
+            d="M6.603 2h7.08a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-7.08a1 1 0 0 1-.76-.35L1 8l4.844-5.65A1 1 0 0 1 6.603 2zm7.08-1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7.08a2 2 0 0 1-1.519-.698L.241 8.65a1 1 0 0 1 0-1.302L5.084 1.7A2 2 0 0 1 6.603 1h7.08zM5.829 5.146a.5.5 0 0 0 0 .708L7.976 8l-2.147 2.146a.5.5 0 0 0 .707.708l2.147-2.147 2.146 2.147a.5.5 0 0 0 .707-.708L9.39 8l2.146-2.146a.5.5 0 0 0-.707-.708L8.683 7.293 6.536 5.146a.5.5 0 0 0-.707 0z" />
+        </svg>
+      </span>
+    </button>
+    <p class="text-center mb-0" style="color: green;">{{message}}</p>
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <section>
+    <div class="container pt-5">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col text-uppercase">№</th>
+            <th scope="col text-uppercase">
+
+             <form action="{{ url_for('history')}}" method="POST">
+              {{ form.csrf_token }}
+              {% if  descending %}
+              <span class="dateSearch">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-bar-down" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M1 3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5zM8 6a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 .708-.708L7.5 12.293V6.5A.5.5 0 0 1 8 6z"/>
+                </svg> {{ form.ascending }}
+              </span>
+            {% elif ascending %}
+              <span class="dateSearch1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-bar-up" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M8 10a.5.5 0 0 0 .5-.5V3.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 3.707V9.5a.5.5 0 0 0 .5.5zm-7 2.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5z"/>
+                </svg> {{ form.descending }}
+              </span>
+              {% endif %}
+
+            </th>
+            <th scope="col text-uppercase">Просмотреть/отредактировать/удалить текст</th>
+            <th scope="col text-uppercase">
+              {{ form.alphabateSort }}
+            </th>
+          </tr>
+        </form>
+        </thead>
+        <tbody class="container">
+          {% for history in histories %}
+          {% if history.author == current_user.username %}
+          <tr class="draggable">
+            <th scope="row">{{loop.index}}</th>
+            <td>{{ history.date_posted }}</td>
+            <td>
+              <p class="text-center"><a href="{{ url_for('view', id=history.id) }}" target="_blank">Просмотреть</a> / <a
+                  href="{{ url_for('edit', id=history.id) }}">отредактировать</a> / <a
+                  href="{{ url_for('delete', id=history.id) }}">удалить текст</a></p>
+            </td>
+            <td>{{ history.comment }}</td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+ 
 </div>
+<footer class="footer pt-5">
+  <div class="container custom-footer">
+    <span class="text-muted">
+      <img class="cat-image" src="../static/img/cat8.jpg" />
+    </span>
+  </div>
+</footer>
 {% endblock %}

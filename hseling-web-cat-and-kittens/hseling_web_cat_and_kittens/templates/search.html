@@ -2,9 +2,9 @@
 {% block title %}Поиск в корпусе{% endblock %}
 {% block links %}
 <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/sticky-footer-navbar/">
-<link href="../static/css/bootstrap.css" rel="stylesheet">
-<link href="../static/css/sticky-footer-navbar.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="../static/css/search.css">
+<link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/sticky-footer-navbar.css') }}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/search.css') }}">
 <script type="text/javascript" src="{{ url_for('static', filename='js/dropdown_checkboxes.js') }}"></script>
 {% endblock %}
 
@@ -18,13 +18,13 @@
       <h5>Выберите предметную область:
         <div class="domain subject-field">
           <select class="form-control" name="search-domain">
-            <option>Весь корпус</option>
-            <option>Лингвистика</option>
-            <option>Социология</option>
-            <option>История</option>
-            <option>Юриспруденция</option>
-            <option>Психология и педагогика</option>
-            <option>Экономика</option>
+            <option value="">Весь корпус</option>
+            <option value="Лингвистика">Лингвистика</option>
+            <option value="Социология">Социология</option>
+            <option value="История">История</option>
+            <option value="Юриспруденция">Юриспруденция</option>
+            <option value="Психология и педагогика">Психология и педагогика</option>
+            <option value="Экономика">Экономика</option>
           </select>
         </div>
       </h5>
@@ -38,6 +38,7 @@
           value={{ random_token }} />
         <input class="form-control mr-sm-2 exact-search-field" type="search" placeholder="Введите словоформу"
           aria-label="Search" name="search" style="width: 100%;">
+        <input type="hidden" name="domain" class="hidden-input1">
         <button class="btn btn-success my-2 my-sm-0 exact-search-button" type="submit" form="form1">Искать</button>
       </form>
     </div>
@@ -64,7 +65,7 @@
                 max="50" placeholder="1" name="max"></p>
           </div>
 
-          <div class="relation">
+          <!-- <div class="relation">
             <select class="form-control" name="syntax">
               <option>syntrole</option>
               <option>acl- clausal modifier of noun (adjectival clause)</option>
@@ -98,7 +99,7 @@
               <option>root- root</option>
               <option>xcomp- open clausal complement</option>
             </select>
-          </div>
+          </div> -->
 
           <div class="lemma">
             <input class="form-control mr-sm-2" placeholder="Введите лемму 2" name="lemma2">
@@ -109,6 +110,7 @@
 
           </div>
 
+          <input type="hidden" name="domain" class="hidden-input2">
           <button class="btn btn-success lex-gram-button" type="submit" form="form2">Искать</button>
         </div>
 

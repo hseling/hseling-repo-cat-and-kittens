@@ -2,13 +2,15 @@ import os
 from base64 import b64decode, b64encode
 from flask import Flask, jsonify, request
 from logging import getLogger
+import secrets
 
 
 
 from hseling_api_cat_and_kittens import boilerplate, db_queries
 
-from hseling_lib_cat_and_kittens.process import process_data
+from hseling_lib_cat_and_kittens.process import process_data, process_udpipe
 from hseling_lib_cat_and_kittens.query import query_data
+from hseling_api_cat_and_kittens import checking
 
 
 app = Flask(__name__)
@@ -17,11 +19,15 @@ app.config['LOG_DIR'] = '/tmp/'
 if os.environ.get('HSELING_API_CAT_AND_KITTENS_SETTINGS'):
     app.config.from_envvar('HSELING_API_CAT_AND_KITTENS_SETTINGS')
 
+app.config['HSELING_API_ENDPOINT'] = os.environ.get('HSELING_API_ENDPOINT')
+app.config['HSELING_RPC_ENDPOINT'] = os.environ.get('HSELING_RPC_ENDPOINT')
+
 app.config.update(
     CELERY_BROKER_URL=boilerplate.CELERY_BROKER_URL,
     CELERY_RESULT_BACKEND=boilerplate.CELERY_RESULT_BACKEND
 )
 celery = boilerplate.make_celery(app)
+UPLOAD_FOLDER = 'data/upload'
 
 if not app.debug:
     import logging
@@ -37,6 +43,15 @@ log = getLogger(__name__)
 
 ALLOWED_EXTENSIONS = ['txt']
 
+MODELS_DIR = '/dependencies/hseling-lib-cat-and-kittens/models/'
+MODEL_NAMES = {
+    'russian': 'russian-syntagrus-ud-2.5-191206.udpipe'
+}
+
+def get_server_endpoint():
+    HSELING_API_ENDPOINT = app.config.get('HSELING_API_ENDPOINT')
+
+    return HSELING_API_ENDPOINT
 
 def do_process_task(file_ids_list):
     files_to_process = boilerplate.list_files(recursive=True,
@@ -62,6 +77,16 @@ def do_process_task(file_ids_list):
 @celery.task
 def process_task(file_ids_list=None):
     return do_process_task(file_ids_list)
+
+@celery.task
+def parse_file(text):
+    from ufal.udpipe import Model, Pipeline
+    model_path = MODELS_DIR + MODEL_NAMES['russian']
+    model = Model.load(model_path)
+    pipeline = Pipeline(model, 'tokenizer=ranges', Pipeline.DEFAULT, Pipeline.DEFAULT, 'conllu')
+    return process_udpipe(text, pipeline)
+
+
 @app.route('/api/healthz')
 def healthz():
     app.logger.info('Health checked')
@@ -80,6 +105,16 @@ def upload_endpoint():
                 allowed_extensions=ALLOWED_EXTENSIONS):
             return jsonify(boilerplate.save_file(upload_file))
     return boilerplate.get_upload_form()
+
+@app.route('/api/upload_file', methods=['GET', 'POST'])
+def upload_file():
+    contents = ''
+    if request.method == 'POST':
+        contents = request.values.get('input_text', '')
+        if contents:
+            with open('/data/upload/upload.txt', 'w') as f:
+                f.write(contents)
+    return jsonify({"status" : "ok"})
 
 @app.route('/api/files/<path:file_id>')
 def get_file_endpoint(file_id):
@@ -156,28 +191,98 @@ def get_endpoints(ctx):
 
     return {ep["name"]: ep for ep in all_endpoints if ep}
 
-@app.route("/api/bigram_search")
+@app.route("/api/collocation_search")
 def bigram_search_endpoint():
-    search_token = request.args.get("token")
-    search_metric = request.args.get("metric")
-    search_domain = request.args.get("domain")
-    return jsonify({"values": db_queries.bigram_search(search_token, search_metric, search_domain)})
+    token = request.args.get("token")
+    metric = request.args.get("metric")
+    domain = request.args.get("domain")
+    ngrams = request.args.get("ngrams")
+    return jsonify({"values": db_queries.collocation_search_test(token, metric, domain, ngrams)})
 
 @app.route("/api/single_token_search")
 def single_token_search_endpoint():
-    search_token = request.args.get("token")
-    return jsonify({"values": db_queries.single_token_search(search_token)})
+    token = request.args.get("token")
+    domain = request.args.get("domain")
+    return jsonify({"values": db_queries.single_token_search(token, domain)})
 
 @app.route("/api/lemma_search")
 def lemma_search_endpoint():
-    search_lemma1 = request.args.get("lemma1")
-    search_lemma2 = request.args.get("lemma2")
-    search_morph1 = request.args.get("morph1")
-    search_morph2 = request.args.get("morph2")
-    search_syntrole = request.args.get("syntrole")
-    search_min = request.args.get("min")
-    search_max = request.args.get("max")
-    return jsonify({"values": db_queries.lemma_search(search_lemma1, search_lemma2, search_morph1, search_morph2, search_syntrole, search_min, search_max)})
+    lemma1 = request.args.get("lemma1")
+    lemma2 = request.args.get("lemma2")
+    morph1 = request.args.get("morph1")
+    morph2 = request.args.get("morph2")
+    # syntrole = request.args.get("syntrole")
+    min_ = request.args.get("min")
+    max_ = request.args.get("max")
+    domain = request.args.get("domain")
+    return jsonify({"values": db_queries.lemma_search(lemma1, lemma2, morph1, morph2, min_, max_, domain)})
+
+# @app.route('/api/udpipe', methods=['POST'])
+# def udpify():
+#     from ufal.udpipe import Model, Pipeline
+#     model_path = MODELS_DIR + MODEL_NAMES['russian']
+#     model = Model.load(model_path)
+#     pipeline = Pipeline(model, 'tokenizer=ranges', Pipeline.DEFAULT, Pipeline.DEFAULT, 'conllu')
+#     data = request.get_json()
+#     text = data['text'] if 'text' in data else ''
+#     if text != '':
+#         udpipe_output = pipeline.process(text)
+#         solution = conllu.parse(udpipe_output)
+#     else:
+#         udpipe_output = pipeline.process('')
+#         solution = conllu.parse(udpipe_output)
+#     return jsonify({'solution' : str(solution)})
+
+def generate_file_id():
+    return secrets.token_urlsafe(16)
+
+
+@app.route("/api/upload_text_old", methods=['POST'])
+def upload_text_old():
+    text = request.values.get('text', '')
+    file_id = generate_file_id()
+    file_name = file_id + '.txt'
+    with open(os.path.join(UPLOAD_FOLDER, file_name), 'w') as f:
+        f.write(text)
+    return jsonify({'file_id': file_id})
+
+
+@app.route("/api/save_next_version_old", methods=['POST'])
+def save_next_version_old():
+    text = request.values.get('text', '')
+    file_id = request.values.get('file_id', '')
+    if text and file_id:
+        file_name = file_id + '.txt'
+        with open(os.path.join(UPLOAD_FOLDER, file_name), 'w') as f:
+            f.write(text)
+    return jsonify({'success':True})
+
+
+@app.route("/api/get_last_version_old/<file_id>", methods=['GET'])
+def get_last_version_old(file_id):
+    file_name = str(file_id)+'.txt'
+    try:
+        with open(os.path.join(UPLOAD_FOLDER, file_name)) as f:
+            text = f.read()
+        print('Текст считан')
+        return jsonify({'text': text})
+    except IOError:
+        print('Текст не считан')
+        return 'Wrong id', 404
+
+
+@app.route("/api/check_text", methods=['POST'])
+def check_text():
+    #data = request.get_json(force=True)
+    text = request.values.get('text', '')
+    aspects = request.values.get('aspects', '')
+    aspects = aspects.split('&')
+    print('aspects', aspects)
+    #text = data['text'] if 'text' in data else ''
+    #aspects = data['aspects'] if 'aspects' in data else None
+    problems = checking.check_text(text, aspects)
+    return jsonify({'problems': problems})
+
 
 @app.route("/api/")
 def main_endpoint():
